@@ -2,7 +2,8 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
 <title>Dashboard ซ่อมบำรุงรถ</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -11,8 +12,11 @@
 <body>
 <div class="app">
 
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
 <!-- SIDEBAR -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="sb-head">
     <div class="sb-logo">
       <div class="sb-ico">🚗</div>
@@ -55,23 +59,30 @@
 <!-- MAIN CONTENT -->
 <main class="main">
   <header class="topbar">
+    <!-- Hamburger — shown on mobile/tablet only -->
+    <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="เมนู">
+      <span></span><span></span><span></span>
+    </button>
+
     <div class="tb-title" id="page-title">ภาพรวมการซ่อมบำรุง</div>
+
     <div class="tb-actions">
       <button class="btn btn-pri" onclick="openAddForm()">
         <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M12 5v14M5 12h14"/></svg>
-        เพิ่มรายการซ่อม
+        <span class="btn-hide-mobile">เพิ่มรายการซ่อม</span>
+        <span style="display:none" class="btn-show-mobile">+</span>
       </button>
-      <button class="btn" onclick="downloadTemplate()">
+      <button class="btn btn-hide-mobile" onclick="downloadTemplate()">
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M8 12l4 4 4-4M12 8v8"/></svg>
-        ดาวน์โหลด Template
+        Template
       </button>
-      <button class="btn btn-suc" onclick="exportExcel()">
+      <button class="btn btn-suc btn-hide-mobile" onclick="exportExcel()">
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M9 17v-2m3 2v-4m3 4v-6M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2h-5L9 7H5a2 2 0 00-2 2v9a2 2 0 002 2z"/></svg>
-        ส่งออก Excel
+        Excel
       </button>
-      <label class="btn btn-pri" style="cursor:pointer">
+      <label class="btn btn-pri btn-hide-mobile" style="cursor:pointer">
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 12l-4-4-4 4M12 8v8"/></svg>
-        อัปโหลด Excel
+        อัปโหลด
         <input type="file" accept=".xlsx,.xls,.csv" onchange="handleUpload(event)" style="display:none">
       </label>
     </div>
@@ -115,10 +126,10 @@
               <button class="cf-btn active" id="cf-all"   onclick="setChartFilter('')">ทั้งหมด</button>
               <button class="cf-btn"        id="cf-car"   onclick="setChartFilter('รถยนต์')">🚗 รถยนต์</button>
               <button class="cf-btn"        id="cf-truck" onclick="setChartFilter('รถบรรทุก')">🚛 รถบรรทุก</button>
-              <button class="cf-btn"        id="cf-fork"  onclick="setChartFilter('รถโฟคลิฟท์')">🏗️ รถโฟคลิฟท์</button>
+              <button class="cf-btn"        id="cf-fork"  onclick="setChartFilter('รถโฟคลิฟท์')">🏗️ โฟคลิฟท์</button>
             </div>
           </div>
-          <div style="height:260px;position:relative"><canvas id="chart-monthly"></canvas></div>
+          <div class="chart-wrap"><canvas id="chart-monthly"></canvas></div>
         </div>
         <div class="card">
           <div class="card-hd">
@@ -127,7 +138,7 @@
               <div class="card-sub">สัดส่วนแต่ละหมวดหมู่</div>
             </div>
           </div>
-          <div style="height:260px;position:relative"><canvas id="chart-cat"></canvas></div>
+          <div class="chart-wrap"><canvas id="chart-cat"></canvas></div>
         </div>
       </div>
 
@@ -187,7 +198,7 @@
           <input type="text" class="fi" id="f-search" placeholder="ทะเบียน, รายการซ่อม..." oninput="applyFilters()">
         </div>
         <div class="fi-reset">
-          <button class="btn" onclick="resetFilters()" style="height:36px">รีเซ็ต</button>
+          <button class="btn" onclick="resetFilters()" style="min-height:44px">รีเซ็ต</button>
         </div>
       </div>
 
@@ -235,18 +246,30 @@
     <!-- UPLOAD SECTION -->
     <div class="section" id="section-upload">
       <div class="card" style="margin-bottom:20px">
-        <div class="card-hd"><div class="card-title">นำเข้าข้อมูลจาก Excel</div></div>
+        <div class="card-hd">
+          <div class="card-title">นำเข้าข้อมูลจาก Excel</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" onclick="downloadTemplate()">
+              <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M8 12l4 4 4-4M12 8v8"/></svg>
+              ดาวน์โหลด Template
+            </button>
+            <button class="btn btn-suc" onclick="exportExcel()">
+              <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M9 17v-2m3 2v-4m3 4v-6M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2h-5L9 7H5a2 2 0 00-2 2v9a2 2 0 002 2z"/></svg>
+              ส่งออก Excel
+            </button>
+          </div>
+        </div>
         <label class="upload-zone" id="drop-zone">
           <div class="upload-zone-ico">📂</div>
           <div class="upload-zone-txt">คลิกเพื่อเลือกไฟล์ หรือ ลากไฟล์มาวางที่นี่</div>
           <div class="upload-zone-sub">รองรับ .xlsx, .xls, .csv</div>
           <input type="file" accept=".xlsx,.xls,.csv" onchange="handleUpload(event)" style="display:none">
         </label>
-        <div style="margin-top:16px;padding:16px;background:var(--bg);border-radius:8px;font-size:13px;color:var(--muted)">
+        <div style="margin-top:14px;padding:14px;background:var(--bg);border-radius:8px;font-size:13px;color:var(--muted)">
           <strong style="color:var(--txt)">รูปแบบคอลัมน์ที่รองรับ:</strong><br>
           วันที่ · ทะเบียนรถ · ประเภทรถ · เลขไมล์ · อาการ/ปัญหา · รายการซ่อม · หมวดหมู่ซ่อม · อู่/ผู้ซ่อม · ค่าอะไหล่ · ค่าแรง · รวมค่าใช้จ่าย · สถานะ · ผู้แจ้ง · หมายเหตุ<br>
-          <span style="margin-top:8px;display:block">สถานะที่รองรับ: <strong>รอดำเนินการ / กำลังซ่อม / เสร็จแล้ว</strong></span>
-          <span>หมวดหมู่ที่รองรับ: <strong>เครื่องยนต์ / เบรก / ยาง / แอร์ / ระบบไฟ / ช่วงล่าง / อื่น ๆ</strong></span>
+          <span style="margin-top:6px;display:block">สถานะ: <strong>รอดำเนินการ / กำลังซ่อม / เสร็จแล้ว</strong></span>
+          <span>หมวดหมู่: <strong>เครื่องยนต์ / เบรก / ยาง / แอร์ / ระบบไฟ / ช่วงล่าง / อื่น ๆ</strong></span>
         </div>
       </div>
     </div>

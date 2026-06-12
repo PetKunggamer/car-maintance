@@ -1,3 +1,27 @@
+// ─── SIDEBAR TOGGLE (mobile) ──────────────────────────────────────────────────
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const btn     = document.getElementById('hamburger-btn');
+  const isOpen  = sidebar.classList.toggle('open');
+  overlay.classList.toggle('show', isOpen);
+  btn.classList.toggle('active', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+  const btn = document.getElementById('hamburger-btn');
+  if (btn) btn.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('sidebar-overlay').addEventListener('click', closeSidebar);
+
+// Close sidebar on Escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+
 // ─── SECTION NAVIGATION ───────────────────────────────────────────────────────
 const TITLES = {
   dashboard: 'ภาพรวมการซ่อมบำรุง',
@@ -12,6 +36,8 @@ function showSection(id, btn) {
   document.getElementById('section-' + id).classList.add('active');
   if (btn) btn.classList.add('active');
   document.getElementById('page-title').textContent = TITLES[id] || id;
+  // Auto-close sidebar on mobile after nav tap
+  if (window.innerWidth < 1024) closeSidebar();
 }
 
 // ─── VEHICLE HISTORY MODAL ────────────────────────────────────────────────────
@@ -46,10 +72,12 @@ function openModal(plate) {
   </tr>`).join('');
 
   document.getElementById('modal').classList.add('show');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
   document.getElementById('modal').classList.remove('show');
+  document.body.style.overflow = '';
 }
 
 document.getElementById('modal').addEventListener('click', e => {
