@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คู่มือการใช้งาน — ระบบซ่อมบำรุงรถ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pri:#1d4ed8;--plight:#eff6ff;--txt:#1e293b;--muted:#64748b;
+  --bdr:#e2e8f0;--bg:#f8fafc;--grn:#059669;--ora:#d97706;--red:#dc2626
+}
+body{font-family:'Sarabun',sans-serif;color:var(--txt);background:#fff;font-size:15px;line-height:1.7}
+
+/* COVER */
+.cover{background:linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 50%,#3b82f6 100%);color:#fff;padding:80px 60px;min-height:60vh;display:flex;flex-direction:column;justify-content:center;page-break-after:always}
+.cover-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:6px 16px;font-size:13px;font-weight:500;margin-bottom:32px;width:fit-content}
+.cover-title{font-size:42px;font-weight:800;line-height:1.2;margin-bottom:12px}
+.cover-sub{font-size:20px;font-weight:400;opacity:.85;margin-bottom:48px}
+.cover-meta{display:flex;gap:40px;flex-wrap:wrap}
+.cm{display:flex;flex-direction:column;gap:2px}
+.cm-label{font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.08em}
+.cm-val{font-size:15px;font-weight:600}
+.cover-icon{font-size:80px;margin-bottom:24px}
+
+/* LAYOUT */
+.doc{max-width:860px;margin:0 auto;padding:0 40px}
+@media(max-width:640px){.doc{padding:0 20px}.cover{padding:48px 24px}.cover-title{font-size:28px}}
+
+/* TOC */
+.toc{padding:48px 0;border-bottom:2px solid var(--bdr)}
+.toc-title{font-size:22px;font-weight:800;margin-bottom:24px;color:var(--pri)}
+.toc-list{list-style:none;display:flex;flex-direction:column;gap:0}
+.toc-item{display:flex;align-items:center;padding:8px 0;border-bottom:1px dashed var(--bdr)}
+.toc-num{width:28px;height:28px;background:var(--pri);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-right:12px}
+.toc-text{flex:1;font-size:15px;font-weight:500}
+.toc-ico{font-size:18px;margin-right:8px}
+
+/* SECTION */
+.sec{padding:48px 0;border-bottom:1px solid var(--bdr)}
+.sec:last-child{border-bottom:none}
+.sec-num{font-size:12px;font-weight:700;color:var(--pri);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.sec-title{font-size:26px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.sec-desc{font-size:15px;color:var(--muted);margin-bottom:32px}
+
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:20px}
+.step{display:flex;gap:16px;align-items:flex-start}
+.step-num{width:32px;height:32px;background:var(--pri);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;margin-top:2px}
+.step-body{flex:1}
+.step-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.step-desc{font-size:14px;color:var(--muted);line-height:1.6}
+.step-img{margin-top:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:16px;font-size:13px;color:var(--muted)}
+
+/* CALLOUT */
+.callout{border-radius:10px;padding:16px 20px;margin:20px 0;display:flex;gap:12px;align-items:flex-start}
+.callout-tip{background:#ecfdf5;border-left:4px solid var(--grn)}
+.callout-warn{background:#fffbeb;border-left:4px solid var(--ora)}
+.callout-info{background:var(--plight);border-left:4px solid var(--pri)}
+.callout-ico{font-size:20px;flex-shrink:0;margin-top:1px}
+.callout-body{flex:1}
+.callout-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.callout-tip .callout-title{color:var(--grn)}
+.callout-warn .callout-title{color:var(--ora)}
+.callout-info .callout-title{color:var(--pri)}
+.callout-text{font-size:14px;color:var(--txt);line-height:1.6}
+
+/* CARDS EXPLAINER */
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+@media(max-width:540px){.card-grid{grid-template-columns:1fr}}
+.xcard{border-radius:10px;padding:16px;border:1px solid var(--bdr);background:var(--bg)}
+.xcard-ico{font-size:28px;margin-bottom:8px}
+.xcard-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.xcard-desc{font-size:13px;color:var(--muted);line-height:1.5}
+
+/* BADGE DEMO */
+.badge-row{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.bdemo{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600}
+.bd-grn{background:#ecfdf5;color:#059669;border:1px solid #6ee7b7}
+.bd-blu{background:#ecfeff;color:#0891b2;border:1px solid #67e8f9}
+.bd-ora{background:#fffbeb;color:#d97706;border:1px solid #fcd34d}
+
+/* TABLE MOCK */
+.tmock{overflow-x:auto;margin:16px 0;border-radius:8px;border:1px solid var(--bdr)}
+.tmock table{width:100%;border-collapse:collapse;font-size:13px}
+.tmock th{background:#f1f5f9;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--bdr)}
+.tmock td{padding:9px 12px;border-bottom:1px solid #f8fafc}
+.tmock tr:last-child td{border-bottom:none}
+
+/* SCREEN MOCK */
+.screen{background:#0f172a;border-radius:12px;padding:0;overflow:hidden;margin:20px 0;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.screen-bar{background:#1e293b;padding:10px 16px;display:flex;align-items:center;gap:8px}
+.screen-dot{width:10px;height:10px;border-radius:50%}
+.screen-url{background:#334155;border-radius:4px;padding:4px 12px;font-size:11px;color:#94a3b8;flex:1;text-align:center}
+.screen-body{padding:20px}
+.screen-sidebar{background:#1e293b;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;color:#94a3b8}
+.screen-nav{display:flex;flex-direction:column;gap:4px}
+.screen-nav-item{padding:8px 10px;border-radius:5px;font-size:12px;color:#94a3b8;display:flex;align-items:center;gap:8px}
+.screen-nav-item.active{background:#1d4ed8;color:#fff}
+.smcards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.smcard{background:#1e293b;border-radius:6px;padding:10px;text-align:center}
+.smcard-val{font-size:14px;font-weight:700;color:#fff}
+.smcard-lbl{font-size:9px;color:#64748b;margin-top:2px}
+
+/* HIGHLIGHT BOX */
+.hbox{background:var(--plight);border:1px solid #bfdbfe;border-radius:10px;padding:20px 24px;margin:20px 0}
+.hbox-title{font-size:15px;font-weight:700;color:var(--pri);margin-bottom:8px}
+.hbox ul{padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.hbox li{font-size:14px;color:var(--txt)}
+
+/* FAQ */
+.faq{display:flex;flex-direction:column;gap:0}
+.faq-item{border-bottom:1px solid var(--bdr);padding:16px 0}
+.faq-q{font-size:15px;font-weight:700;color:var(--pri);margin-bottom:6px;display:flex;align-items:flex-start;gap:8px}
+.faq-q::before{content:"Q";background:var(--pri);color:#fff;font-size:11px;font-weight:800;padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.faq-a{font-size:14px;color:var(--muted);line-height:1.7;padding-left:30px}
+
+/* PRINT */
+@media print{
+  .cover{page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sec{page-break-inside:avoid}
+  .screen,.tmock{page-break-inside:avoid}
+}
+h3{font-size:17px;font-weight:700;margin:20px 0 8px;color:var(--txt)}
+p{font-size:14px;color:var(--muted);margin-bottom:10px}
+ul.plain{padding-left:20px;display:flex;flex-direction:column;gap:4px}
+ul.plain li{font-size:14px;color:var(--txt)}
+.tag{display:inline-flex;background:#f1f5f9;color:var(--txt);border:1px solid var(--bdr);border-radius:5px;font-size:12px;font-weight:600;padding:2px 8px;margin:1px}
+.arrow{color:var(--pri);font-weight:700}
+.number-circle{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--pri);color:#fff;border-radius:50%;font-size:11px;font-weight:700;vertical-align:middle;margin:0 4px}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-icon">🚗</div>
+  <div class="cover-badge">📋 คู่มือการใช้งาน</div>
+  <div class="cover-title">ระบบติดตาม<br>การซ่อมบำรุงรถ</div>
+  <div class="cover-sub">Vehicle Maintenance Dashboard</div>
+  <div class="cover-meta">
+    <div class="cm"><div class="cm-label">เวอร์ชัน</div><div class="cm-val">1.0</div></div>
+    <div class="cm"><div class="cm-label">ปรับปรุงล่าสุด</div><div class="cm-val">มิถุนายน 2569</div></div>
+    <div class="cm"><div class="cm-label">กลุ่มผู้ใช้</div><div class="cm-val">พนักงานทุกฝ่าย</div></div>
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="doc">
+<div class="toc">
+  <div class="toc-title">📑 สารบัญ</div>
+  <ul class="toc-list">
+    <li class="toc-item"><span class="toc-num">1</span><span class="toc-ico">👋</span><span class="toc-text">แนะนำระบบ — ระบบนี้ทำอะไรได้บ้าง?</span></li>
+    <li class="toc-item"><span class="toc-num">2</span><span class="toc-ico">🖥️</span><span class="toc-text">การเข้าใช้งาน — เปิดเว็บครั้งแรก</span></li>
+    <li class="toc-item"><span class="toc-num">3</span><span class="toc-ico">📊</span><span class="toc-text">หน้าภาพรวม — อ่านผลสรุปและกราฟ</span></li>
+    <li class="toc-item"><span class="toc-num">4</span><span class="toc-ico">📂</span><span class="toc-text">การนำเข้าข้อมูล Excel — อัปโหลดไฟล์</span></li>
+    <li class="toc-item"><span class="toc-num">5</span><span class="toc-ico">🔍</span><span class="toc-text">ตารางซ่อมและการกรองข้อมูล</span></li>
+    <li class="toc-item"><span class="toc-num">6</span><span class="toc-ico">⏳</span><span class="toc-text">งานค้าง — ติดตามงานที่ยังไม่เสร็จ</span></li>
+    <li class="toc-item"><span class="toc-num">7</span><span class="toc-ico">🚙</span><span class="toc-text">ประวัติซ่อมรายคัน — คลิกดูรายละเอียดรถ</span></li>
+    <li class="toc-item"><span class="toc-num">8</span><span class="toc-ico">💾</span><span class="toc-text">การส่งออกข้อมูล Excel</span></li>
+    <li class="toc-item"><span class="toc-num">9</span><span class="toc-ico">❓</span><span class="toc-text">คำถามที่พบบ่อย (FAQ)</span></li>
+  </ul>
+</div>
+
+
+<!-- SECTION 1 -->
+<div class="sec" id="s1">
+  <div class="sec-num">บทที่ 1</div>
+  <div class="sec-title">👋 แนะนำระบบ</div>
+  <div class="sec-desc">ระบบนี้ทำอะไรได้บ้าง และใครควรใช้งาน</div>
+
+  <p>ระบบซ่อมบำรุงรถเป็น <strong>เว็บไซต์สำหรับติดตามและสรุปข้อมูลการซ่อมรถในบริษัท</strong> ใช้งานได้ทันทีผ่านเบราว์เซอร์ ไม่ต้องติดตั้งโปรแกรมเพิ่ม</p>
+
+  <div class="card-grid">
+    <div class="xcard">
+      <div class="xcard-ico">📊</div>
+      <div class="xcard-title">ดูภาพรวมได้ทันที</div>
+      <div class="xcard-desc">ค่าใช้จ่ายรวม จำนวนครั้งที่ซ่อม รถที่ซ่อมบ่อย และกราฟรายเดือน อยู่ในหน้าเดียว</div>
+    </div>
+    <div class="xcard">
+      <div class="xcard-ico">📂</div>
+      <div class="xcard-title">นำเข้าจาก Excel</div>
+      <div class="xcard-desc">แค่คลิกอัปโหลดไฟล์ Excel ที่ทีมบันทึกไว้ ระบบจะแปลงเป็นตารางและกราฟให้อัตโนมัติ</div>
+    </div>
+    <div class="xcard">
+      <div class="xcard-ico">🔍</div>
+      <div class="xcard-title">ค้นหาและกรองได้</div>
+      <div class="xcard-desc">กรองตามทะเบียน เดือน สถานะ หรือหมวดหมู่ ค้นหาข้อมูลได้รวดเร็ว</div>
+    </div>
+    <div class="xcard">
+      <div class="xcard-ico">⏳</div>
+      <div class="xcard-title">ติดตามงานค้าง</div>
+      <div class="xcard-desc">ดูรายการที่ยังรอดำเนินการหรือกำลังซ่อมได้ในหน้าเดียว ไม่ตกหล่น</div>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-ico">💡</div>
+    <div class="callout-body">
+      <div class="callout-title">เหมาะสำหรับ</div>
+      <div class="callout-text">ผู้จัดการฝ่าย, เจ้าหน้าที่ธุรการ, และพนักงานที่ต้องการตรวจสอบประวัติการซ่อมรถในบริษัท <strong>ไม่จำเป็นต้องมีความรู้ด้านเทคนิค</strong></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SECTION 2 -->
+<div class="sec" id="s2">
+  <div class="sec-num">บทที่ 2</div>
+  <div class="sec-title">🖥️ การเข้าใช้งาน</div>
+  <div class="sec-desc">วิธีเปิดและเริ่มต้นใช้งานระบบ</div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">เปิดเบราว์เซอร์</div>
+        <div class="step-desc">ใช้เบราว์เซอร์ที่รองรับ เช่น <strong>Google Chrome, Microsoft Edge, Firefox, Safari</strong> ใช้งานได้ทั้งบนคอมพิวเตอร์และโทรศัพท์มือถือ</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">พิมพ์ที่อยู่เว็บ (URL) ในช่องที่อยู่</div>
+        <div class="step-desc">พิมพ์ที่อยู่เว็บที่ได้รับจากผู้ดูแลระบบ เช่น <span class="tag">https://maintenance-dashboard.vercel.app</span> แล้วกด <strong>Enter</strong></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">หน้าเว็บจะโหลดขึ้นมา</div>
+        <div class="step-desc">ระบบจะแสดงหน้า <strong>ภาพรวม</strong> พร้อมข้อมูลตัวอย่างทันที ไม่ต้อง login หรือสร้างบัญชี</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-ico">⭐</div>
+    <div class="callout-body">
+      <div class="callout-title">เคล็ดลับ — บันทึกลงมือถือ</div>
+      <div class="callout-text">บนมือถือ iOS: แตะไอคอน <strong>แชร์ (□↑)</strong> แล้วเลือก <strong>"Add to Home Screen"</strong><br>บนมือถือ Android: แตะเมนู <strong>⋮</strong> แล้วเลือก <strong>"Add to Home Screen"</strong><br>จะได้ไอคอนบนหน้าจอเปิดได้เหมือนแอปพลิเคชัน</div>
+    </div>
+  </div>
+
+  <h3>🗂️ โครงสร้างหน้าเว็บ</h3>
+  <p>หน้าเว็บแบ่งออกเป็น 2 ส่วนหลัก:</p>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin:12px 0">
+    <div style="flex:1;min-width:220px;background:#0f172a;border-radius:10px;padding:16px">
+      <div style="font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:10px">📌 แถบเมนูซ้าย (Sidebar)</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="background:#1d4ed8;color:#fff;border-radius:5px;padding:7px 10px;font-size:13px;font-weight:600">📊 ภาพรวม</div>
+        <div style="color:#94a3b8;padding:7px 10px;font-size:13px">📋 ตารางซ่อมทั้งหมด</div>
+        <div style="color:#94a3b8;padding:7px 10px;font-size:13px">⏳ งานค้าง <span style="background:#dc2626;color:#fff;border-radius:99px;font-size:10px;padding:1px 6px;margin-left:4px">5</span></div>
+        <div style="color:#94a3b8;padding:7px 10px;font-size:13px">📂 นำเข้า Excel</div>
+        <div style="margin-top:8px;background:#2563eb;color:#fff;border-radius:5px;padding:8px 10px;font-size:12px;text-align:center;font-weight:600">⬆ อัปโหลด Excel</div>
+      </div>
+    </div>
+    <div style="flex:2;min-width:220px;background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:16px">
+      <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">📌 พื้นที่แสดงผลหลัก (ด้านขวา)</div>
+      <ul class="plain">
+        <li>เนื้อหาของแต่ละหน้าจะแสดงตรงนี้</li>
+        <li>ด้านบนสุดมีปุ่ม <strong>ดาวน์โหลด Template / ส่งออก / อัปโหลด</strong></li>
+        <li>เลื่อนหน้าขึ้น-ลงเพื่อดูข้อมูลเพิ่มเติม</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- SECTION 3 -->
+<div class="sec" id="s3">
+  <div class="sec-num">บทที่ 3</div>
+  <div class="sec-title">📊 หน้าภาพรวม</div>
+  <div class="sec-desc">หน้าแรกที่เห็นเมื่อเปิดเว็บ — สรุปตัวเลขสำคัญทั้งหมด</div>
+
+  <h3>📌 การ์ดสรุปตัวเลข (4 ใบ)</h3>
+  <p>ด้านบนของหน้าจะมีการ์ดสี่ใบแสดงข้อมูลสำคัญ:</p>
+
+  <div class="card-grid">
+    <div class="xcard" style="border-left:4px solid #2563eb">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px">💰 ค่าใช้จ่ายรวม</div>
+      <div style="font-size:22px;font-weight:800;color:var(--txt)">฿152,750</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">บาท (ค่าอะไหล่ + ค่าแรง)</div>
+    </div>
+    <div class="xcard" style="border-left:4px solid #059669">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px">🔧 ซ่อมทั้งหมด</div>
+      <div style="font-size:22px;font-weight:800;color:var(--txt)">28 ครั้ง</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">รายการซ่อมในระบบ</div>
+    </div>
+    <div class="xcard" style="border-left:4px solid #ea580c">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px">🚗 ซ่อมบ่อยสุด</div>
+      <div style="font-size:22px;font-weight:800;color:var(--txt)">กข-1234</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">ซ่อม 6 ครั้ง</div>
+    </div>
+    <div class="xcard" style="border-left:4px solid #7c3aed">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px">📈 ค่าใช้จ่ายสูงสุด</div>
+      <div style="font-size:22px;font-weight:800;color:var(--txt)">กน-4567</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">฿25,850</div>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-ico">ℹ️</div>
+    <div class="callout-body">
+      <div class="callout-title">ตัวเลขอัพเดตอัตโนมัติ</div>
+      <div class="callout-text">เมื่ออัปโหลดไฟล์ Excel ใหม่ การ์ดทุกใบจะอัพเดตตัวเลขให้ทันทีโดยอัตโนมัติ</div>
+    </div>
+  </div>
+
+  <h3>📈 กราฟค่าใช้จ่ายรายเดือน</h3>
+  <p>กราฟแท่งแสดงยอดรวมค่าซ่อมในแต่ละเดือน — ใช้สังเกตว่าเดือนไหนมีค่าใช้จ่ายสูงผิดปกติ</p>
+
+  <h3>🍩 กราฟหมวดหมู่งานซ่อม</h3>
+  <p>กราฟวงกลมแสดงว่างานซ่อมส่วนใหญ่อยู่ในหมวดไหน เช่น เครื่องยนต์, เบรก, ยาง ฯลฯ</p>
+
+  <h3>⏳ ตารางงานค้างท้ายหน้า</h3>
+  <p>ด้านล่างของหน้าภาพรวมจะมีตารางสรุปงานที่ยังไม่เสร็จ ทำให้เห็นภาพรวมโดยไม่ต้องเปลี่ยนหน้า</p>
+</div>
+
+
+<!-- SECTION 4 -->
+<div class="sec" id="s4">
+  <div class="sec-num">บทที่ 4</div>
+  <div class="sec-title">📂 การนำเข้าข้อมูล Excel</div>
+  <div class="sec-desc">วิธีเตรียมไฟล์และอัปโหลดเข้าระบบ</div>
+
+  <h3>ขั้นตอนที่ 1 — เตรียมไฟล์ Excel</h3>
+
+  <div class="callout callout-tip">
+    <div class="callout-ico">📥</div>
+    <div class="callout-body">
+      <div class="callout-title">แนะนำ — ดาวน์โหลด Template ก่อน</div>
+      <div class="callout-text">คลิกปุ่ม <strong>"ดาวน์โหลด Template"</strong> ที่มุมขวาบนของเว็บ จะได้ไฟล์ Excel ที่มีหัวคอลัมน์ถูกต้องครบทุกช่อง นำไปกรอกข้อมูลได้เลย</div>
+    </div>
+  </div>
+
+  <p>ไฟล์ Excel ต้องมีหัวคอลัมน์ <strong>แถวแรก</strong> เป็นชื่อต่อไปนี้ (เรียงตามลำดับหรือไม่เรียงก็ได้):</p>
+
+  <div class="tmock">
+    <table>
+      <thead><tr><th>ชื่อคอลัมน์</th><th>ข้อมูลที่กรอก</th><th>ตัวอย่าง</th></tr></thead>
+      <tbody>
+        <tr><td><strong>วันที่</strong></td><td>วันที่ซ่อม</td><td>2026-06-11</td></tr>
+        <tr><td><strong>ทะเบียนรถ</strong></td><td>เลขทะเบียนรถ</td><td>กข-1234</td></tr>
+        <tr><td><strong>ประเภทรถ</strong></td><td>ยี่ห้อ/รุ่น</td><td>Toyota Hilux Vigo</td></tr>
+        <tr><td><strong>เลขไมล์</strong></td><td>ตัวเลขไมล์</td><td>85000</td></tr>
+        <tr><td><strong>อาการ/ปัญหา</strong></td><td>อธิบายอาการ</td><td>น้ำมันเครื่องรั่ว</td></tr>
+        <tr><td><strong>รายการซ่อม</strong></td><td>งานที่ทำ</td><td>เปลี่ยนซีล</td></tr>
+        <tr><td><strong>หมวดหมู่ซ่อม</strong></td><td>ประเภทงาน (ดูด้านล่าง)</td><td>เครื่องยนต์</td></tr>
+        <tr><td><strong>อู่/ผู้ซ่อม</strong></td><td>ชื่ออู่หรือช่าง</td><td>อู่ช่างสมชาย</td></tr>
+        <tr><td><strong>ค่าอะไหล่</strong></td><td>ตัวเลข (บาท)</td><td>2500</td></tr>
+        <tr><td><strong>ค่าแรง</strong></td><td>ตัวเลข (บาท)</td><td>1500</td></tr>
+        <tr><td><strong>รวมค่าใช้จ่าย</strong></td><td>ตัวเลขรวม (บาท)</td><td>4000</td></tr>
+        <tr><td><strong>สถานะ</strong></td><td>ดูด้านล่าง</td><td>เสร็จแล้ว</td></tr>
+        <tr><td><strong>ผู้แจ้ง</strong></td><td>ชื่อผู้แจ้งซ่อม</td><td>สมชาย ใจดี</td></tr>
+        <tr><td><strong>หมายเหตุ</strong></td><td>หมายเหตุเพิ่มเติม</td><td>(เว้นว่างได้)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>ค่าที่กรอกในช่อง "สถานะ"</h3>
+  <div class="badge-row">
+    <div class="bdemo bd-grn">✓ เสร็จแล้ว</div>
+    <div class="bdemo bd-blu">⚙ กำลังซ่อม</div>
+    <div class="bdemo bd-ora">⏳ รอดำเนินการ</div>
+  </div>
+
+  <h3>ค่าที่กรอกในช่อง "หมวดหมู่ซ่อม"</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">
+    <span class="tag">เครื่องยนต์</span><span class="tag">เบรก</span><span class="tag">ยาง</span>
+    <span class="tag">แอร์</span><span class="tag">ระบบไฟ</span><span class="tag">ช่วงล่าง</span><span class="tag">อื่น ๆ</span>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-ico">⚠️</div>
+    <div class="callout-body">
+      <div class="callout-title">ข้อควรระวัง</div>
+      <div class="callout-text">กรอก <strong>สถานะ</strong> และ <strong>หมวดหมู่ซ่อม</strong> ต้องตรงกับคำที่กำหนดเท่านั้น (ตัวอักษรเหมือนกันทุกตัว) มิฉะนั้นระบบจะจัดหมวดไม่ได้</div>
+    </div>
+  </div>
+
+  <h3>ขั้นตอนที่ 2 — อัปโหลดไฟล์</h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">คลิกปุ่ม "อัปโหลด Excel" สีน้ำเงิน</div>
+        <div class="step-desc">อยู่ที่มุมขวาบนของเว็บ หรือที่ปุ่มด้านล่าง Sidebar ด้านซ้าย</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">เลือกไฟล์จากคอมพิวเตอร์</div>
+        <div class="step-desc">หน้าต่างเลือกไฟล์จะเปิดขึ้น ค้นหาไฟล์ .xlsx หรือ .xls ที่เตรียมไว้ แล้วคลิก <strong>Open / เปิด</strong></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">รอสักครู่ — ระบบแปลงข้อมูลให้อัตโนมัติ</div>
+        <div class="step-desc">จะมีข้อความแจ้งเตือนสีเขียวที่มุมขวาล่างว่า <em>"นำเข้าสำเร็จ X รายการ"</em> และหน้าเว็บจะอัพเดตทุกข้อมูลทันที</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-ico">🖱️</div>
+    <div class="callout-body">
+      <div class="callout-title">ลากไฟล์มาวางได้เลย!</div>
+      <div class="callout-text">ไปที่หน้า <strong>"นำเข้า Excel"</strong> ในเมนูซ้าย แล้ว <strong>ลากไฟล์ Excel จาก File Explorer มาวางในกล่องประตี</strong> ไม่ต้องคลิกหลายขั้นตอน</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SECTION 5 -->
+<div class="sec" id="s5">
+  <div class="sec-num">บทที่ 5</div>
+  <div class="sec-title">🔍 ตารางซ่อมและการกรองข้อมูล</div>
+  <div class="sec-desc">วิธีดูและค้นหาข้อมูลในตารางใหญ่</div>
+
+  <p>คลิก <strong>"ตารางซ่อมทั้งหมด"</strong> ในเมนูซ้าย เพื่อดูรายการซ่อมทั้งหมด พร้อมตัวกรอง 5 แบบ:</p>
+
+  <div class="hbox">
+    <div class="hbox-title">🔧 ตัวกรอง 5 แบบ</div>
+    <ul>
+      <li><strong>ทะเบียนรถ</strong> — เลือกดูรถคันใดคันหนึ่งโดยเฉพาะ</li>
+      <li><strong>เดือน/ปี</strong> — กรองดูเฉพาะเดือนที่ต้องการ เช่น มกราคม 2569</li>
+      <li><strong>สถานะ</strong> — กรองดูเฉพาะงานที่ "เสร็จแล้ว" หรือ "กำลังซ่อม" หรือ "รอดำเนินการ"</li>
+      <li><strong>หมวดหมู่</strong> — กรองดูเฉพาะงานซ่อม เช่น เครื่องยนต์, ยาง, เบรก</li>
+      <li><strong>ค้นหา</strong> — พิมพ์ข้อความใดก็ได้ เช่น ชื่อช่าง, อาการ, ทะเบียน</li>
+    </ul>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">เลือกค่าในช่องกรอง</div>
+        <div class="step-desc">คลิกช่องที่ต้องการกรอง เลือกค่าจาก dropdown หรือพิมพ์คำค้นหา ตารางจะอัพเดตให้ทันที <strong>ไม่ต้องกดปุ่มค้นหา</strong></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">ล้างตัวกรองด้วยปุ่ม "รีเซ็ต"</div>
+        <div class="step-desc">คลิกปุ่ม <strong>รีเซ็ต</strong> ทางขวาสุดของแถวกรอง เพื่อแสดงข้อมูลทั้งหมดอีกครั้ง</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-ico">📋</div>
+    <div class="callout-body">
+      <div class="callout-title">อ่านตารางอย่างไร</div>
+      <div class="callout-text">คอลัมน์ที่ยาวเกินจะแสดงแบบย่อ <strong>วางเมาส์ทิ้งไว้บนข้อความนั้น</strong> จะแสดงข้อความเต็มให้อ่านได้</div>
+    </div>
+  </div>
+
+  <h3>ความหมายของสีในตาราง</h3>
+  <div style="display:flex;flex-direction:column;gap:8px;margin:12px 0">
+    <div style="display:flex;align-items:center;gap:12px"><span class="bdemo bd-grn" style="min-width:120px">✓ เสร็จแล้ว</span><span style="font-size:14px;color:var(--muted)">งานซ่อมเสร็จสมบูรณ์แล้ว</span></div>
+    <div style="display:flex;align-items:center;gap:12px"><span class="bdemo bd-blu" style="min-width:120px">⚙ กำลังซ่อม</span><span style="font-size:14px;color:var(--muted)">อยู่ระหว่างดำเนินการซ่อม</span></div>
+    <div style="display:flex;align-items:center;gap:12px"><span class="bdemo bd-ora" style="min-width:120px">⏳ รอดำเนินการ</span><span style="font-size:14px;color:var(--muted)">รับแจ้งแล้วแต่ยังไม่เริ่ม</span></div>
+  </div>
+</div>
+
+
+<!-- SECTION 6 -->
+<div class="sec" id="s6">
+  <div class="sec-num">บทที่ 6</div>
+  <div class="sec-title">⏳ งานค้าง</div>
+  <div class="sec-desc">ติดตามงานที่ยังไม่เสร็จทั้งหมด</div>
+
+  <p>คลิก <strong>"งานค้าง"</strong> ในเมนูซ้าย จะแสดงรายการซ่อมที่มีสถานะ <strong>"รอดำเนินการ"</strong> และ <strong>"กำลังซ่อม"</strong> ทั้งหมด</p>
+
+  <div class="hbox">
+    <div class="hbox-title">📌 สิ่งที่เห็นในหน้านี้</div>
+    <ul>
+      <li>จำนวนงานค้างทั้งหมด (แสดงในวงกลมสีแดงที่เมนู)</li>
+      <li>วันที่แจ้ง, ทะเบียนรถ, รายการซ่อม, หมวดหมู่</li>
+      <li>ชื่ออู่/ผู้รับผิดชอบ</li>
+      <li>ค่าใช้จ่ายที่ประเมิน (ถ้ามี)</li>
+      <li>หมายเหตุ เช่น "รอชิ้นส่วน", "นัดรับวันศุกร์"</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-ico">🔔</div>
+    <div class="callout-body">
+      <div class="callout-title">ตรวจสอบงานค้างเป็นประจำ</div>
+      <div class="callout-text">แนะนำให้เข้ามาดูหน้า <strong>งานค้าง</strong> ทุกเช้า เพื่อติดตามว่ามีงานไหนค้างนานผิดปกติหรือไม่ เมื่ออู่แจ้งว่าซ่อมเสร็จแล้ว ให้อัปเดตสถานะใน Excel แล้วอัปโหลดใหม่อีกครั้ง</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SECTION 7 -->
+<div class="sec" id="s7">
+  <div class="sec-num">บทที่ 7</div>
+  <div class="sec-title">🚙 ประวัติซ่อมรายคัน</div>
+  <div class="sec-desc">ดูรายละเอียดการซ่อมทั้งหมดของรถแต่ละคัน</div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">คลิกที่ "ทะเบียนรถ" ในตาราง</div>
+        <div class="step-desc">ไม่ว่าจะอยู่ที่หน้าไหน (ภาพรวม, ตาราง, งานค้าง) ทะเบียนรถจะเป็น <strong>ตัวหนังสือสีน้ำเงิน</strong> สามารถคลิกได้</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">หน้าต่างประวัติจะเปิดขึ้น</div>
+        <div class="step-desc">แสดงข้อมูลสรุปของรถคันนั้น:</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px">
+          <div style="background:var(--bg);border-radius:6px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:800">6</div><div style="font-size:11px;color:var(--muted)">ครั้งที่ซ่อม</div></div>
+          <div style="background:var(--bg);border-radius:6px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:800">฿20,550</div><div style="font-size:11px;color:var(--muted)">รวมค่าใช้จ่าย</div></div>
+          <div style="background:var(--bg);border-radius:6px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:800">5</div><div style="font-size:11px;color:var(--muted)">เสร็จแล้ว</div></div>
+          <div style="background:var(--bg);border-radius:6px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:800">88,100</div><div style="font-size:11px;color:var(--muted)">เลขไมล์ล่าสุด</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">ดูตารางประวัติด้านล่าง</div>
+        <div class="step-desc">แสดงทุกครั้งที่รถคันนั้นเข้าซ่อม เรียงจากล่าสุดก่อน</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">ปิดหน้าต่างเมื่อดูเสร็จ</div>
+        <div class="step-desc">คลิกปุ่ม <strong>×</strong> ที่มุมขวาบน หรือคลิกพื้นที่ด้านนอกหน้าต่าง</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SECTION 8 -->
+<div class="sec" id="s8">
+  <div class="sec-num">บทที่ 8</div>
+  <div class="sec-title">💾 การส่งออกข้อมูล Excel</div>
+  <div class="sec-desc">บันทึกข้อมูลในระบบออกมาเป็นไฟล์ Excel</div>
+
+  <p>เมื่อต้องการนำข้อมูลออกไปทำรายงานหรือส่งให้ผู้บริหาร:</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">คลิกปุ่ม "ส่งออก Excel" สีเขียว</div>
+        <div class="step-desc">อยู่ที่มุมขวาบนของเว็บ ข้างปุ่มอัปโหลด</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">ไฟล์จะดาวน์โหลดอัตโนมัติ</div>
+        <div class="step-desc">ไฟล์ชื่อ <span class="tag">maintenance_export.xlsx</span> จะถูกบันทึกที่โฟลเดอร์ <strong>Downloads</strong> ของคอมพิวเตอร์</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-ico">📌</div>
+    <div class="callout-body">
+      <div class="callout-title">ส่งออกข้อมูลทั้งหมด</div>
+      <div class="callout-text">ระบบจะส่งออก <strong>ข้อมูลทั้งหมดในระบบ</strong> (ไม่ใช่แค่ที่กรองไว้) เพื่อให้ได้ข้อมูลครบถ้วน</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SECTION 9 -->
+<div class="sec" id="s9">
+  <div class="sec-num">บทที่ 9</div>
+  <div class="sec-title">❓ คำถามที่พบบ่อย (FAQ)</div>
+  <div class="sec-desc">ปัญหาและคำตอบที่ผู้ใช้งานพบบ่อย</div>
+
+  <div class="faq">
+    <div class="faq-item">
+      <div class="faq-q">อัปโหลด Excel แล้วขึ้นว่า "เกิดข้อผิดพลาด" ต้องทำอย่างไร?</div>
+      <div class="faq-a">ตรวจสอบว่า: (1) ชื่อหัวคอลัมน์แถวแรกถูกต้อง (2) ไฟล์เป็นนามสกุล .xlsx หรือ .xls (ไม่ใช่ .csv ที่เข้ารหัสผิด) (3) ลองบันทึกไฟล์ Excel ใหม่อีกครั้ง แล้วอัปโหลดซ้ำ</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">ข้อมูลหายไปเมื่อรีเฟรชหน้าเว็บ ทำอย่างไร?</div>
+      <div class="faq-a">ข้อมูลที่อัปโหลดจะอยู่ในหน่วยความจำของเบราว์เซอร์เท่านั้น <strong>เมื่อรีเฟรชหรือปิดแท็บ ข้อมูลจะหายไป</strong> ต้องอัปโหลดไฟล์ Excel ใหม่ทุกครั้งที่เปิดเว็บ ดังนั้นให้เก็บไฟล์ Excel ต้นฉบับไว้เสมอ</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">จะเพิ่มข้อมูลการซ่อมใหม่ได้อย่างไร?</div>
+      <div class="faq-a">ระบบนี้ <strong>ไม่รองรับการกรอกข้อมูลโดยตรง</strong> ให้เพิ่มข้อมูลในไฟล์ Excel ต้นฉบับก่อน จากนั้นบันทึกไฟล์และอัปโหลดไฟล์ใหม่เข้าระบบอีกครั้ง</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">ใช้งานบนโทรศัพท์มือถือได้ไหม?</div>
+      <div class="faq-a">ได้ รองรับทั้ง iPhone และ Android แต่เนื่องจากตารางมีหลายคอลัมน์ แนะนำให้ใช้บนคอมพิวเตอร์หรือแท็บเล็ตเพื่อประสบการณ์ที่ดีกว่า</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">กราฟไม่แสดงผล หน้าจอเปล่า ทำอย่างไร?</div>
+      <div class="faq-a">ลองกด <strong>Ctrl + F5</strong> (Windows) หรือ <strong>Cmd + Shift + R</strong> (Mac) เพื่อโหลดหน้าใหม่ทั้งหมด หากยังไม่แสดงให้ลองเปิดเบราว์เซอร์อื่น เช่น Google Chrome</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">วันที่ในตารางแสดงผิด ต้องกรอก Excel แบบไหน?</div>
+      <div class="faq-a">กรอกวันที่รูปแบบ <span class="tag">YYYY-MM-DD</span> เช่น <strong>2026-06-11</strong> หรือตั้งค่า Format ใน Excel ให้เป็น Date แบบ YYYY-MM-DD ระบบรองรับทั้ง พ.ศ. และ ค.ศ. แต่แนะนำใช้ ค.ศ. เพื่อความแม่นยำ</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">ทะเบียนรถในช่อง Dropdown ไม่มีรถที่ต้องการ?</div>
+      <div class="faq-a">Dropdown จะแสดงเฉพาะทะเบียนที่มีอยู่ในข้อมูลที่อัปโหลด ตรวจสอบว่ากรอกทะเบียนรถถูกต้องในไฟล์ Excel (ระวังช่องว่างหรืออักษรพิเศษ)</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">ต้องการพิมพ์คู่มือนี้ออกมาเป็นกระดาษ ทำได้ไหม?</div>
+      <div class="faq-a">ได้ กด <strong>Ctrl + P</strong> (Windows) หรือ <strong>Cmd + P</strong> (Mac) เพื่อพิมพ์ คู่มือนี้ออกแบบมาให้พิมพ์ได้สวยงาม</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="padding:32px 0;text-align:center;color:var(--muted);font-size:13px;border-top:1px solid var(--bdr)">
+  <div style="font-size:24px;margin-bottom:8px">🚗</div>
+  <div style="font-weight:600;color:var(--txt);margin-bottom:4px">ระบบซ่อมบำรุงรถ — Vehicle Maintenance Dashboard</div>
+  <div>หากมีปัญหาในการใช้งาน กรุณาติดต่อผู้ดูแลระบบของบริษัท</div>
+</div>
+</div><!-- end doc -->
+
+</body>
+</html>

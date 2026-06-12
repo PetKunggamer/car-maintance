@@ -1,0 +1,9 @@
+*.xlsx
+*.xls
+*.csv
+*.py
+Realtime Tracking/
+.claude/
+.dist/
+dashboard.html
+gen_dashboard.py

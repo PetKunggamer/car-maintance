@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard ซ่อมบำรุงรถ</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sw:240px;--sbg:#0f172a;--shov:#1e293b;--sact:#1d4ed8;
+  --pri:#2563eb;--plight:#eff6ff;
+  --suc:#059669;--slight:#ecfdf5;
+  --war:#d97706;--wlight:#fffbeb;
+  --dan:#dc2626;--dlight:#fef2f2;
+  --inf:#0891b2;--ilight:#ecfeff;
+  --pur:#7c3aed;--pulight:#f5f3ff;
+  --bg:#f1f5f9;--cbg:#fff;--txt:#1e293b;--muted:#64748b;--bdr:#e2e8f0;
+  --sh:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shm:0 4px 6px -1px rgba(0,0,0,.1);
+  --r:8px;--rl:12px
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5}
+.app{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:var(--sw);background:var(--sbg);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;overflow:hidden}
+.sb-head{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-logo{display:flex;align-items:center;gap:10px;color:#fff}
+.sb-ico{width:38px;height:38px;background:var(--pri);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.sb-name{font-size:13px;font-weight:700;line-height:1.3}
+.sb-sub{font-size:11px;color:#94a3b8;font-weight:400}
+.sb-nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav-sec{font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.08em;padding:10px 8px 5px}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:6px;cursor:pointer;color:#94a3b8;font-size:13.5px;font-weight:500;border:none;background:none;text-align:left;transition:all .15s;margin-bottom:2px}
+.nav-btn:hover{background:var(--shov);color:#e2e8f0}
+.nav-btn.active{background:var(--sact);color:#fff}
+.nav-btn svg{flex-shrink:0;width:18px;height:18px}
+.nav-badge{margin-left:auto;background:var(--dan);color:#fff;border-radius:99px;font-size:10px;font-weight:700;padding:1px 6px;min-width:18px;text-align:center}
+.sb-foot{padding:14px 16px;border-top:1px solid rgba(255,255,255,.08)}
+.btn-upload-sb{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px;background:var(--pri);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-upload-sb:hover{background:#1d4ed8}
+
+/* MAIN */
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--cbg);border-bottom:1px solid var(--bdr);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-title{font-size:18px;font-weight:700}
+.tb-actions{display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--bdr);background:var(--cbg);color:var(--txt);transition:all .15s}
+.btn:hover{background:var(--bg)}
+.btn-pri{background:var(--pri);color:#fff;border-color:var(--pri)}
+.btn-pri:hover{background:#1d4ed8;border-color:#1d4ed8}
+.btn-suc{background:var(--suc);color:#fff;border-color:var(--suc)}
+.btn-suc:hover{background:#047857;border-color:#047857}
+.content{padding:24px;flex:1}
+
+/* SECTION */
+.section{display:none}.section.active{display:block}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.stat-card{background:var(--cbg);border-radius:var(--rl);padding:20px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:6px;border-left:4px solid transparent}
+.sc-top{display:flex;align-items:center;justify-content:space-between}
+.sc-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.sc-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.sc-val{font-size:22px;font-weight:800;color:var(--txt);line-height:1.2;word-break:break-word}
+.sc-sub{font-size:12px;color:var(--muted)}
+.sc-blue{border-left-color:var(--pri)}.sc-blue .sc-ico{background:var(--plight)}
+.sc-grn{border-left-color:var(--suc)}.sc-grn .sc-ico{background:var(--slight)}
+.sc-ora{border-left-color:#ea580c}.sc-ora .sc-ico{background:#fff7ed}
+.sc-pur{border-left-color:var(--pur)}.sc-pur .sc-ico{background:var(--pulight)}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:20px}
+.card{background:var(--cbg);border-radius:var(--rl);padding:20px;box-shadow:var(--sh)}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:700;color:var(--txt)}
+.card-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* FILTERS */
+.filters{background:var(--cbg);border-radius:var(--rl);padding:16px 20px;box-shadow:var(--sh);margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.fg{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
+.fl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.fi{padding:8px 10px;border:1px solid var(--bdr);border-radius:6px;font-size:13px;color:var(--txt);background:var(--bg);outline:none;transition:border-color .15s;width:100%}
+.fi:focus{border-color:var(--pri);background:#fff}
+.fi-reset{flex:0 0 auto}
+
+/* TABLE */
+.tbl-wrap{background:var(--cbg);border-radius:var(--rl);box-shadow:var(--sh);overflow:hidden}
+.tbl-hd{padding:14px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.tbl-hd-title{font-size:15px;font-weight:700}
+.tbl-count{font-size:12px;color:var(--muted);background:var(--bg);padding:3px 10px;border-radius:99px;border:1px solid var(--bdr)}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#f8fafc;padding:10px 12px;text-align:left;font-weight:600;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--bdr);white-space:nowrap}
+tbody tr{border-bottom:1px solid #f1f5f9;transition:background .1s}
+tbody tr:hover{background:#fafafa}
+tbody td{padding:9px 12px;color:var(--txt);vertical-align:middle}
+.td-link{color:var(--pri);cursor:pointer;font-weight:600}
+.td-link:hover{text-decoration:underline}
+.td-muted{color:var(--muted);font-size:12px}
+.td-num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.td-num.red{color:var(--dan)}
+.empty{padding:48px;text-align:center;color:var(--muted)}
+.empty-ico{font-size:36px;margin-bottom:8px}
+.empty-txt{font-size:14px}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-suc{background:var(--slight);color:var(--suc)}
+.b-war{background:var(--wlight);color:var(--war)}
+.b-inf{background:var(--ilight);color:var(--inf)}
+.b-dan{background:var(--dlight);color:var(--dan)}
+.b-def{background:#f1f5f9;color:#64748b}
+.b-pur{background:var(--pulight);color:var(--pur)}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modal-box{background:var(--cbg);border-radius:var(--rl);width:100%;max-width:900px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:pop .2s ease}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{padding:18px 24px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:17px;font-weight:700}
+.modal-close{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;border:none;background:none;color:var(--muted);font-size:22px;transition:background .1s}
+.modal-close:hover{background:var(--bg)}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+.modal-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.ms{background:var(--bg);border-radius:8px;padding:14px;text-align:center}
+.ms-val{font-size:19px;font-weight:800;color:var(--txt)}
+.ms-lbl{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:#1e293b;color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;z-index:400;box-shadow:var(--shm);transform:translateY(80px);opacity:0;transition:all .3s;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.t-ok{border-left:4px solid var(--suc)}
+.toast.t-err{border-left:4px solid var(--dan)}
+
+/* PENDING SECTION on dashboard */
+.pending-hd{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.pending-hd-txt{font-size:15px;font-weight:700}
+.pbadge{background:var(--dan);color:#fff;border-radius:99px;font-size:11px;font-weight:700;padding:1px 8px}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--bdr);border-radius:var(--rl);padding:48px 24px;text-align:center;background:var(--cbg);cursor:pointer;transition:all .2s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--pri);background:var(--plight)}
+.upload-zone-ico{font-size:42px;margin-bottom:12px}
+.upload-zone-txt{font-size:15px;font-weight:600;color:var(--txt);margin-bottom:6px}
+.upload-zone-sub{font-size:13px;color:var(--muted)}
+
+/* SECTION HEADER */
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sec-hd-txt{font-size:20px;font-weight:800}
+
+@media(max-width:1280px){.stats-grid{grid-template-columns:repeat(2,1fr)}.charts-grid{grid-template-columns:1fr}}
+@media(max-width:900px){.modal-stats{grid-template-columns:repeat(2,1fr)}}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg-full{grid-column:1/-1}
+textarea.fi{resize:vertical;min-height:62px;font-family:inherit}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--bdr)}
+.form-req{color:var(--dan);margin-left:2px}
+.btn-danger{background:var(--dan);color:#fff;border-color:var(--dan)}
+.btn-danger:hover{background:#b91c1c;border-color:#b91c1c}
+.btn-sm{padding:4px 8px;font-size:12px;border-radius:5px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-head">
+    <div class="sb-logo">
+      <div class="sb-ico">🚗</div>
+      <div>
+        <div class="sb-name">ระบบซ่อมบำรุงรถ</div>
+        <div class="sb-sub">Vehicle Maintenance</div>
+      </div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-sec">เมนูหลัก</div>
+    <button class="nav-btn active" onclick="showSection('dashboard',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      ภาพรวม
+    </button>
+    <button class="nav-btn" onclick="showSection('table',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      ตารางซ่อมทั้งหมด
+    </button>
+    <button class="nav-btn" onclick="showSection('pending',this)" id="nav-pending">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      งานค้าง
+      <span class="nav-badge" id="badge-pending">0</span>
+    </button>
+    <div class="nav-sec" style="margin-top:8px">ข้อมูล</div>
+    <button class="nav-btn" onclick="showSection('upload',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 12l-4-4-4 4M12 8v8"/></svg>
+      นำเข้า Excel
+    </button>
+  </nav>
+  <div class="sb-foot">
+    <label class="btn-upload-sb" style="cursor:pointer">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 12l-4-4-4 4M12 8v8"/></svg>
+      อัปโหลด Excel
+      <input type="file" accept=".xlsx,.xls,.csv" onchange="handleUpload(event)" style="display:none">
+    </label>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <header class="topbar">
+    <div class="tb-title" id="page-title">ภาพรวมการซ่อมบำรุง</div>
+    <div class="tb-actions">
+      <button class="btn btn-pri" onclick="openAddForm()">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M12 5v14M5 12h14"/></svg>
+        เพิ่มรายการซ่อม
+      </button>
+      <button class="btn" onclick="downloadTemplate()">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M8 12l4 4 4-4M12 8v8"/></svg>
+        ดาวน์โหลด Template
+      </button>
+      <button class="btn btn-suc" onclick="exportExcel()">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M9 17v-2m3 2v-4m3 4v-6M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2h-5L9 7H5a2 2 0 00-2 2v9a2 2 0 002 2z"/></svg>
+        ส่งออก Excel
+      </button>
+      <label class="btn btn-pri" style="cursor:pointer">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 12l-4-4-4 4M12 8v8"/></svg>
+        อัปโหลด Excel
+        <input type="file" accept=".xlsx,.xls,.csv" onchange="handleUpload(event)" style="display:none">
+      </label>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- DASHBOARD SECTION -->
+    <div class="section active" id="section-dashboard">
+      <!-- Stats Cards -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card sc-blue">
+          <div class="sc-top"><div class="sc-label">ค่าใช้จ่ายรวม</div><div class="sc-ico">💰</div></div>
+          <div class="sc-val" id="stat-cost">-</div>
+          <div class="sc-sub">บาท (ค่าอะไหล่ + ค่าแรง)</div>
+        </div>
+        <div class="stat-card sc-grn">
+          <div class="sc-top"><div class="sc-label">ซ่อมทั้งหมด</div><div class="sc-ico">🔧</div></div>
+          <div class="sc-val" id="stat-count">-</div>
+          <div class="sc-sub">รายการซ่อมในระบบ</div>
+        </div>
+        <div class="stat-card sc-ora">
+          <div class="sc-top"><div class="sc-label">ซ่อมบ่อยสุด</div><div class="sc-ico">🚗</div></div>
+          <div class="sc-val" id="stat-most">-</div>
+          <div class="sc-sub" id="stat-most-sub">-</div>
+        </div>
+        <div class="stat-card sc-pur">
+          <div class="sc-top"><div class="sc-label">ค่าใช้จ่ายสูงสุด</div><div class="sc-ico">📈</div></div>
+          <div class="sc-val" id="stat-top-cost">-</div>
+          <div class="sc-sub" id="stat-top-cost-sub">-</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-hd">
+            <div>
+              <div class="card-title">ค่าใช้จ่ายซ่อมรายเดือน</div>
+              <div class="card-sub">แสดงยอดรวมค่าซ่อมแยกตามเดือน</div>
+            </div>
+          </div>
+          <div style="height:260px;position:relative"><canvas id="chart-monthly"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-hd">
+            <div>
+              <div class="card-title">หมวดหมู่งานซ่อม</div>
+              <div class="card-sub">สัดส่วนแต่ละหมวดหมู่</div>
+            </div>
+          </div>
+          <div style="height:260px;position:relative"><canvas id="chart-cat"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Pending on dashboard -->
+      <div class="card">
+        <div class="pending-hd">
+          <div class="pending-hd-txt">งานซ่อมที่ยังไม่เสร็จ</div>
+          <span class="pbadge" id="pending-badge-count">0</span>
+        </div>
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr>
+              <th>วันที่</th><th>ทะเบียนรถ</th><th>ประเภทรถ</th>
+              <th>รายการซ่อม</th><th>หมวดหมู่</th><th>อู่/ผู้ซ่อม</th>
+              <th>สถานะ</th><th>ผู้แจ้ง</th>
+            </tr></thead>
+            <tbody id="pending-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE SECTION -->
+    <div class="section" id="section-table">
+      <div class="filters">
+        <div class="fg">
+          <label class="fl">ทะเบียนรถ</label>
+          <select class="fi" id="f-plate" onchange="applyFilters()">
+            <option value="">ทั้งหมด</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">เดือน/ปี</label>
+          <input type="month" class="fi" id="f-month" onchange="applyFilters()">
+        </div>
+        <div class="fg">
+          <label class="fl">ประเภทยานพาหนะ</label>
+          <select class="fi" id="f-vcat" onchange="applyFilters()">
+            <option value="">ทั้งหมด</option>
+            <option>รถยนต์</option>
+            <option>รถบรรทุก</option>
+            <option>รถโฟคลิฟท์</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">สถานะ</label>
+          <select class="fi" id="f-status" onchange="applyFilters()">
+            <option value="">ทั้งหมด</option>
+            <option>รอดำเนินการ</option>
+            <option>กำลังซ่อม</option>
+            <option>เสร็จแล้ว</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">หมวดหมู่</label>
+          <select class="fi" id="f-cat" onchange="applyFilters()">
+            <option value="">ทั้งหมด</option>
+            <option>เครื่องยนต์</option>
+            <option>เบรก</option>
+            <option>ยาง</option>
+            <option>แอร์</option>
+            <option>ระบบไฟ</option>
+            <option>ช่วงล่าง</option>
+            <option>อื่น ๆ</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">ค้นหา</label>
+          <input type="text" class="fi" id="f-search" placeholder="ทะเบียน, รายการซ่อม..." oninput="applyFilters()">
+        </div>
+        <div class="fi-reset">
+          <button class="btn" onclick="resetFilters()" style="height:36px">รีเซ็ต</button>
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <div class="tbl-hd">
+          <div class="tbl-hd-title">ตาราง Log การซ่อมทั้งหมด</div>
+          <div class="tbl-count" id="tbl-count">0 รายการ</div>
+        </div>
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr>
+              <th>วันที่</th><th>ทะเบียนรถ</th><th>ประเภทยานพาหนะ</th><th>ยี่ห้อ/รุ่น</th><th>เลขไมล์</th>
+              <th>อาการ/ปัญหา</th><th>รายการซ่อม</th><th>หมวดหมู่</th>
+              <th>อู่/ผู้ซ่อม</th><th class="td-num">ค่าอะไหล่</th>
+              <th class="td-num">ค่าแรง</th><th class="td-num">รวม</th>
+              <th>สถานะ</th><th>ผู้แจ้ง</th><th>หมายเหตุ</th><th>จัดการ</th>
+            </tr></thead>
+            <tbody id="main-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDING SECTION -->
+    <div class="section" id="section-pending">
+      <div class="tbl-wrap">
+        <div class="tbl-hd">
+          <div class="tbl-hd-title">งานซ่อมที่ยังไม่เสร็จ</div>
+          <div class="tbl-count" id="pending-count">0 รายการ</div>
+        </div>
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr>
+              <th>วันที่</th><th>ทะเบียนรถ</th><th>ประเภทรถ</th>
+              <th>อาการ/ปัญหา</th><th>รายการซ่อม</th><th>หมวดหมู่</th>
+              <th>อู่/ผู้ซ่อม</th><th class="td-num">รวม</th>
+              <th>สถานะ</th><th>ผู้แจ้ง</th><th>หมายเหตุ</th>
+            </tr></thead>
+            <tbody id="pending-full-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPLOAD SECTION -->
+    <div class="section" id="section-upload">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-hd"><div class="card-title">นำเข้าข้อมูลจาก Excel</div></div>
+        <label class="upload-zone" id="drop-zone">
+          <div class="upload-zone-ico">📂</div>
+          <div class="upload-zone-txt">คลิกเพื่อเลือกไฟล์ หรือ ลากไฟล์มาวางที่นี่</div>
+          <div class="upload-zone-sub">รองรับ .xlsx, .xls, .csv</div>
+          <input type="file" accept=".xlsx,.xls,.csv" onchange="handleUpload(event)" style="display:none">
+        </label>
+        <div style="margin-top:16px;padding:16px;background:var(--bg);border-radius:8px;font-size:13px;color:var(--muted)">
+          <strong style="color:var(--txt)">รูปแบบคอลัมน์ที่รองรับ:</strong><br>
+          วันที่ · ทะเบียนรถ · ประเภทรถ · เลขไมล์ · อาการ/ปัญหา · รายการซ่อม · หมวดหมู่ซ่อม · อู่/ผู้ซ่อม · ค่าอะไหล่ · ค่าแรง · รวมค่าใช้จ่าย · สถานะ · ผู้แจ้ง · หมายเหตุ<br>
+          <span style="margin-top:8px;display:block">สถานะที่รองรับ: <strong>รอดำเนินการ / กำลังซ่อม / เสร็จแล้ว</strong></span>
+          <span>หมวดหมู่ที่รองรับ: <strong>เครื่องยนต์ / เบรก / ยาง / แอร์ / ระบบไฟ / ช่วงล่าง / อื่น ๆ</strong></span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</main><!-- end main -->
+</div><!-- end app -->
+
+<!-- ADD / EDIT FORM MODAL -->
+<div class="modal" id="form-modal">
+  <div class="modal-box" style="max-width:680px">
+    <div class="modal-head">
+      <div class="modal-title" id="form-modal-title">เพิ่มรายการซ่อม</div>
+      <button class="modal-close" onclick="closeFormModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg">
+          <label class="fl">วันที่<span class="form-req">*</span></label>
+          <input type="date" class="fi" id="ff-date">
+        </div>
+        <div class="fg">
+          <label class="fl">ทะเบียนรถ<span class="form-req">*</span></label>
+          <input type="text" class="fi" id="ff-plate" placeholder="เช่น กข-1234">
+        </div>
+        <div class="fg">
+          <label class="fl">ประเภทยานพาหนะ</label>
+          <select class="fi" id="ff-vcat">
+            <option value="">-- เลือกประเภท --</option>
+            <option>รถยนต์</option>
+            <option>รถบรรทุก</option>
+            <option>รถโฟคลิฟท์</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">ยี่ห้อ/รุ่น</label>
+          <input type="text" class="fi" id="ff-vtype" placeholder="เช่น Toyota Vigo">
+        </div>
+        <div class="fg">
+          <label class="fl">เลขไมล์</label>
+          <input type="number" class="fi" id="ff-miles" placeholder="0" min="0">
+        </div>
+        <div class="fg fg-full">
+          <label class="fl">อาการ/ปัญหา</label>
+          <textarea class="fi" id="ff-symptoms" rows="2" placeholder="อธิบายอาการที่พบ"></textarea>
+        </div>
+        <div class="fg fg-full">
+          <label class="fl">รายการซ่อม</label>
+          <textarea class="fi" id="ff-repair" rows="2" placeholder="รายละเอียดงานที่ซ่อม"></textarea>
+        </div>
+        <div class="fg">
+          <label class="fl">หมวดหมู่ซ่อม</label>
+          <select class="fi" id="ff-cat">
+            <option value="">-- เลือกหมวดหมู่ --</option>
+            <option>เครื่องยนต์</option><option>เบรก</option><option>ยาง</option>
+            <option>แอร์</option><option>ระบบไฟ</option><option>ช่วงล่าง</option><option>อื่น ๆ</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">อู่/ผู้ซ่อม</label>
+          <input type="text" class="fi" id="ff-garage" placeholder="ชื่ออู่หรือช่าง">
+        </div>
+        <div class="fg">
+          <label class="fl">ค่าอะไหล่ (฿)</label>
+          <input type="number" class="fi" id="ff-parts" placeholder="0" min="0" oninput="calcTotal()">
+        </div>
+        <div class="fg">
+          <label class="fl">ค่าแรง (฿)</label>
+          <input type="number" class="fi" id="ff-labor" placeholder="0" min="0" oninput="calcTotal()">
+        </div>
+        <div class="fg">
+          <label class="fl">รวมค่าใช้จ่าย (฿)</label>
+          <input type="number" class="fi" id="ff-total" placeholder="คำนวณอัตโนมัติ" min="0">
+        </div>
+        <div class="fg">
+          <label class="fl">สถานะ</label>
+          <select class="fi" id="ff-status">
+            <option>รอดำเนินการ</option>
+            <option>กำลังซ่อม</option>
+            <option>เสร็จแล้ว</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">ผู้แจ้ง</label>
+          <input type="text" class="fi" id="ff-reporter" placeholder="ชื่อผู้แจ้ง">
+        </div>
+        <div class="fg fg-full">
+          <label class="fl">หมายเหตุ</label>
+          <textarea class="fi" id="ff-note" rows="2" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" onclick="closeFormModal()">ยกเลิก</button>
+        <button class="btn btn-pri" onclick="saveFormData()">💾 บันทึก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VEHICLE HISTORY MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modal-title">ประวัติซ่อม</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="modal-vtype"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-stats" id="modal-stats"></div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>วันที่</th><th>เลขไมล์</th><th>อาการ/ปัญหา</th><th>รายการซ่อม</th>
+            <th>หมวดหมู่</th><th>อู่/ผู้ซ่อม</th><th class="td-num">ค่าอะไหล่</th>
+            <th class="td-num">ค่าแรง</th><th class="td-num">รวม</th><th>สถานะ</th>
+          </tr></thead>
+          <tbody id="modal-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── SAMPLE DATA ─────────────────────────────────────────────────────────────
+const SAMPLE = [
+  {date:'2026-01-08',plate:'กข-1234',vtype:'Toyota Hilux Vigo',miles:85420,symptoms:'น้ำมันเครื่องรั่ว เครื่องยนต์มีเสียงดัง',repair:'เปลี่ยนซีลเครื่องยนต์ เปลี่ยนน้ำมันเครื่อง',cat:'เครื่องยนต์',garage:'อู่ช่างสมชาย',parts:2500,labor:1500,total:4000,status:'เสร็จแล้ว',reporter:'สมชาย ใจดี',note:''},
+  {date:'2026-01-15',plate:'กข-5678',vtype:'Honda City',miles:42300,symptoms:'ผ้าเบรกสึก เสียงดังตอนเบรก',repair:'เปลี่ยนผ้าเบรกหน้า-หลัง',cat:'เบรก',garage:'ฮอนด้าเซอร์วิส',parts:3200,labor:800,total:4000,status:'เสร็จแล้ว',reporter:'สุดา พงษ์รัตน์',note:''},
+  {date:'2026-01-22',plate:'กค-2345',vtype:'Isuzu D-Max',miles:67800,symptoms:'ยางแตก',repair:'เปลี่ยนยาง 2 เส้น',cat:'ยาง',garage:'ร้านยางสมหวัง',parts:5600,labor:400,total:6000,status:'เสร็จแล้ว',reporter:'วิชัย มั่นคง',note:''},
+  {date:'2026-02-03',plate:'กด-3456',vtype:'Toyota Fortuner',miles:125000,symptoms:'แอร์ไม่เย็น',repair:'เติมน้ำยาแอร์ ล้างอีวาโปเรเตอร์',cat:'แอร์',garage:'ศูนย์แอร์รถยนต์',parts:1800,labor:1200,total:3000,status:'เสร็จแล้ว',reporter:'นภา สุขใส',note:''},
+  {date:'2026-02-10',plate:'กน-4567',vtype:'Ford Ranger',miles:58600,symptoms:'ไฟหน้าดับ',repair:'เปลี่ยนหลอดไฟ เปลี่ยนฟิวส์',cat:'ระบบไฟ',garage:'ช่างวิชัยออโต้',parts:850,labor:500,total:1350,status:'เสร็จแล้ว',reporter:'ประทีป จันทร์แดง',note:''},
+  {date:'2026-02-18',plate:'กข-1234',vtype:'Toyota Hilux Vigo',miles:86100,symptoms:'เบรกมีเสียงดัง',repair:'ปรับตั้งเบรก เปลี่ยนจานเบรกหน้า',cat:'เบรก',garage:'อู่ช่างสมชาย',parts:4500,labor:2000,total:6500,status:'เสร็จแล้ว',reporter:'สมชาย ใจดี',note:''},
+  {date:'2026-02-25',plate:'กข-1234',vtype:'Toyota Hilux Vigo',miles:86400,symptoms:'ยางแบน',repair:'ปะยาง เปลี่ยนยางอะไหล่',cat:'ยาง',garage:'ร้านยางสมหวัง',parts:350,labor:200,total:550,status:'เสร็จแล้ว',reporter:'สมชาย ใจดี',note:''},
+  {date:'2026-03-05',plate:'กบ-5678',vtype:'Mitsubishi Triton',miles:78900,symptoms:'เครื่องยนต์สั่น ตั้งไฟผิด',repair:'ตั้งไฟ เปลี่ยนหัวเทียน',cat:'เครื่องยนต์',garage:'ศูนย์บริการมิตซู',parts:2200,labor:1800,total:4000,status:'เสร็จแล้ว',reporter:'อรรถพล วงษ์ไทย',note:''},
+  {date:'2026-03-08',plate:'กน-4567',vtype:'Ford Ranger',miles:59200,symptoms:'น้ำมันเครื่องหมด',repair:'เปลี่ยนถ่ายน้ำมันเครื่อง กรองน้ำมัน',cat:'เครื่องยนต์',garage:'ช่างวิชัยออโต้',parts:1200,labor:600,total:1800,status:'เสร็จแล้ว',reporter:'ประทีป จันทร์แดง',note:'เช็กระยะ 10,000 กม.'},
+  {date:'2026-03-12',plate:'กต-6789',vtype:'Nissan Navara',miles:95400,symptoms:'ช่วงล่างมีเสียงดัง',repair:'เปลี่ยนลูกหมากปีกนก',cat:'ช่วงล่าง',garage:'ช่างวิชัยออโต้',parts:3800,labor:2500,total:6300,status:'เสร็จแล้ว',reporter:'สมชาย ใจดี',note:''},
+  {date:'2026-03-20',plate:'กข-5678',vtype:'Honda City',miles:43500,symptoms:'เบรกมือไม่ทำงาน',repair:'ปรับสายเบรกมือ',cat:'เบรก',garage:'ฮอนด้าเซอร์วิส',parts:600,labor:400,total:1000,status:'เสร็จแล้ว',reporter:'สุดา พงษ์รัตน์',note:''},
+  {date:'2026-03-28',plate:'กค-2345',vtype:'Isuzu D-Max',miles:68900,symptoms:'แอร์ไม่เย็น น้ำยารั่ว',repair:'เปลี่ยนท่อแอร์ เติมน้ำยา',cat:'แอร์',garage:'ศูนย์แอร์รถยนต์',parts:3500,labor:1500,total:5000,status:'เสร็จแล้ว',reporter:'วิชัย มั่นคง',note:''},
+  {date:'2026-04-02',plate:'กด-3456',vtype:'Toyota Fortuner',miles:127200,symptoms:'น้ำมันเกียร์รั่ว',repair:'เปลี่ยนซีลเกียร์ เติมน้ำมันเกียร์',cat:'เครื่องยนต์',garage:'โตโยต้าเซอร์วิส',parts:4200,labor:3000,total:7200,status:'เสร็จแล้ว',reporter:'นภา สุขใส',note:''},
+  {date:'2026-04-09',plate:'กน-4567',vtype:'Ford Ranger',miles:59800,symptoms:'ยางสึก ต้องเปลี่ยน',repair:'เปลี่ยนยาง 4 เส้น ถ่วงล้อ',cat:'ยาง',garage:'ร้านยางสมหวัง',parts:11200,labor:800,total:12000,status:'เสร็จแล้ว',reporter:'ประทีป จันทร์แดง',note:'ยาง Bridgestone ขนาด 265/65R17'},
+  {date:'2026-04-15',plate:'กข-1234',vtype:'Toyota Hilux Vigo',miles:87200,symptoms:'ระบบไฟฟ้าขัดข้อง แบตหมด',repair:'ตรวจซ่อมระบบไฟ เปลี่ยนแบตเตอรี่',cat:'ระบบไฟ',garage:'ช่างวิชัยออโต้',parts:3500,labor:2000,total:5500,status:'เสร็จแล้ว',reporter:'สมชาย ใจดี',note:''},
+  {date:'2026-04-22',plate:'กบ-5678',vtype:'Mitsubishi Triton',miles:80100,symptoms:'กันสาดหลุด ตัวถังบุบ',repair:'ซ่อมกันสาด อัดพ่นสีบริเวณที่บุบ',cat:'อื่น ๆ',garage:'อู่ตัวถังเฮียแม้น',parts:2800,labor:1200,total:4000,status:'เสร็จแล้ว',reporter:'อรรถพล วงษ์ไทย',note:''},
+  {date:'2026-04-28',plate:'กต-6789',vtype:'Nissan Navara',miles:96200,symptoms:'กระจกไฟฟ้าเสีย',repair:'ซ่อมมอเตอร์กระจกประตูหน้าซ้าย',cat:'อื่น ๆ',garage:'ร้านอิเล็กทรอนิกส์รถยนต์',parts:2500,labor:1500,total:4000,status:'เสร็จแล้ว',reporter:'สมชาย ใจดี',note:''},
+  {date:'2026-05-03',plate:'กต-6789',vtype:'Nissan Navara',miles:96800,symptoms:'น้ำหม้อน้ำรั่ว เครื่องร้อน',repair:'เปลี่ยนหม้อน้ำ เปลี่ยนน้ำยาหล่อเย็น',cat:'เครื่องยนต์',garage:'ช่างวิชัยออโต้',parts:6500,labor:2500,total:9000,status:'เสร็จแล้ว',reporter:'สมชาย ใจดี',note:'แนะนำตรวจระบบหล่อเย็นทุก 6 เดือน'},
+  {date:'2026-05-10',plate:'กข-5678',vtype:'Honda City',miles:44800,symptoms:'เบรกหน้าร้อนผิดปกติ',repair:'เปลี่ยนผ้าเบรก จานเบรกหน้า',cat:'เบรก',garage:'ฮอนด้าเซอร์วิส',parts:4800,labor:1200,total:6000,status:'เสร็จแล้ว',reporter:'สุดา พงษ์รัตน์',note:''},
+  {date:'2026-05-18',plate:'กค-2345',vtype:'Isuzu D-Max',miles:70200,symptoms:'เครื่องยนต์เสียงดัง ควันดำ',repair:'ตรวจเครื่อง เปลี่ยนหัวฉีด ล้างหัวฉีด',cat:'เครื่องยนต์',garage:'ศูนย์บริการอีซูซุ',parts:8500,labor:4500,total:13000,status:'เสร็จแล้ว',reporter:'วิชัย มั่นคง',note:''},
+  {date:'2026-05-25',plate:'กด-3456',vtype:'Toyota Fortuner',miles:128500,symptoms:'ยางอ่อน ไฟเตือนแดง',repair:'เปลี่ยนยาง 2 เส้น ปะยาง 1 เส้น',cat:'ยาง',garage:'ร้านยางสมหวัง',parts:4200,labor:600,total:4800,status:'กำลังซ่อม',reporter:'นภา สุขใส',note:'รอยางสั่ง'},
+  {date:'2026-06-01',plate:'กน-4567',vtype:'Ford Ranger',miles:61200,symptoms:'เสียงดังใต้ท้องรถ โช้ครั่ว',repair:'ตรวจช่วงล่าง เปลี่ยนโช้คหน้า',cat:'ช่วงล่าง',garage:'ช่างวิชัยออโต้',parts:7200,labor:3500,total:10700,status:'กำลังซ่อม',reporter:'ประทีป จันทร์แดง',note:'รอชิ้นส่วน'},
+  {date:'2026-06-03',plate:'กข-1234',vtype:'Toyota Hilux Vigo',miles:88100,symptoms:'แอร์ไม่เย็น น้ำยาหมด',repair:'ตรวจแอร์ เติมน้ำยา ล้างคอยล์เย็น',cat:'แอร์',garage:'ศูนย์แอร์รถยนต์',parts:1200,labor:800,total:2000,status:'กำลังซ่อม',reporter:'สมชาย ใจดี',note:'นัดรับวันศุกร์'},
+  {date:'2026-06-05',plate:'กบ-5678',vtype:'Mitsubishi Triton',miles:81400,symptoms:'ไฟท้ายไม่ทำงาน สายไฟชำรุด',repair:'เปลี่ยนหลอดไฟท้าย ซ่อมสายไฟ',cat:'ระบบไฟ',garage:'ช่างวิชัยออโต้',parts:1500,labor:1000,total:2500,status:'กำลังซ่อม',reporter:'อรรถพล วงษ์ไทย',note:''},
+  {date:'2026-06-07',plate:'กต-6789',vtype:'Nissan Navara',miles:97500,symptoms:'ยางสึกไม่สม่ำเสมอ',repair:'สลับยาง ถ่วงล้อ ตั้งศูนย์ล้อ',cat:'ยาง',garage:'ร้านยางสมหวัง',parts:500,labor:800,total:1300,status:'รอดำเนินการ',reporter:'สมชาย ใจดี',note:'นัด 10 มิ.ย.'},
+  {date:'2026-06-08',plate:'กข-5678',vtype:'Honda City',miles:45600,symptoms:'เกียร์กระตุก เปลี่ยนเกียร์ไม่ลื่น',repair:'ตรวจระบบเกียร์ เปลี่ยนน้ำมันเกียร์',cat:'เครื่องยนต์',garage:'ฮอนด้าเซอร์วิส',parts:0,labor:1500,total:1500,status:'รอดำเนินการ',reporter:'สุดา พงษ์รัตน์',note:''},
+  {date:'2026-06-09',plate:'กค-2345',vtype:'Isuzu D-Max',miles:71000,symptoms:'ช่วงล่างมีเสียงแปลก',repair:'ตรวจสอบช่วงล่างทั้งหมด',cat:'ช่วงล่าง',garage:'ช่างวิชัยออโต้',parts:0,labor:0,total:0,status:'รอดำเนินการ',reporter:'วิชัย มั่นคง',note:'รอประเมินราคา'},
+  {date:'2026-06-10',plate:'กด-3456',vtype:'Toyota Fortuner',miles:129000,symptoms:'แบตเตอรี่อ่อน สตาร์ทยาก',repair:'เปลี่ยนแบตเตอรี่',cat:'ระบบไฟ',garage:'โตโยต้าเซอร์วิส',parts:3500,labor:500,total:4000,status:'รอดำเนินการ',reporter:'นภา สุขใส',note:''}
+];
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let allData = [...SAMPLE];
+let filtered = [...allData];
+let charts = {};
+const CAT_COLORS = {
+  'เครื่องยนต์':'#3b82f6','เบรก':'#ef4444','ยาง':'#10b981','แอร์':'#06b6d4',
+  'ระบบไฟ':'#f59e0b','ช่วงล่าง':'#8b5cf6','อื่น ๆ':'#6b7280'
+};
+const MONTHS_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const MONTHS_FULL = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+function fmt(n){return n==null||isNaN(n)?'-':'฿'+Number(n).toLocaleString('th-TH')}
+function fmtNum(n){return n==null||isNaN(n)?'-':Number(n).toLocaleString('th-TH')}
+function fmtDate(d){
+  if(!d)return'-';
+  const p=d.split('-');if(p.length<3)return d;
+  return `${parseInt(p[2])} ${MONTHS_TH[parseInt(p[1])-1]} ${parseInt(p[0])+543}`;
+}
+function statusBadge(s){
+  if(s==='เสร็จแล้ว') return `<span class="badge b-suc">✓ ${s}</span>`;
+  if(s==='กำลังซ่อม') return `<span class="badge b-inf">⚙ ${s}</span>`;
+  if(s==='รอดำเนินการ') return `<span class="badge b-war">⏳ ${s}</span>`;
+  return `<span class="badge b-def">${s||'-'}</span>`;
+}
+function catBadge(c){
+  const col=CAT_COLORS[c]||'#6b7280';
+  return `<span class="badge" style="background:${col}22;color:${col}">${c||'-'}</span>`;
+}
+const VCAT_STYLE={
+  'รถยนต์':  {bg:'#eff6ff',color:'#1d4ed8',icon:'🚗'},
+  'รถบรรทุก':{bg:'#fff7ed',color:'#c2410c',icon:'🚛'},
+  'รถโฟคลิฟท์':{bg:'#f0fdf4',color:'#15803d',icon:'🏗️'}
+};
+function vcatBadge(v){
+  const s=VCAT_STYLE[v];
+  if(!s)return `<span class="badge b-def">${v||'-'}</span>`;
+  return `<span class="badge" style="background:${s.bg};color:${s.color}">${s.icon} ${v}</span>`;
+}
+
+// ─── SECTION NAV ──────────────────────────────────────────────────────────
+const TITLES={dashboard:'ภาพรวมการซ่อมบำรุง',table:'ตาราง Log การซ่อมทั้งหมด',pending:'งานซ่อมที่ยังไม่เสร็จ',upload:'นำเข้าข้อมูลจาก Excel'};
+function showSection(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  document.getElementById('page-title').textContent=TITLES[id]||id;
+}
+
+// ─── RENDER DASHBOARD ─────────────────────────────────────────────────────
+function renderDashboard(){
+  const d=allData;
+  // Stats
+  const totalCost=d.reduce((s,r)=>s+(r.total||0),0);
+  const totalRep=d.length;
+  // Most repaired
+  const pc={};d.forEach(r=>pc[r.plate]=(pc[r.plate]||0)+1);
+  const mp=Object.entries(pc).sort((a,b)=>b[1]-a[1])[0];
+  // Highest cost
+  const cc={};d.forEach(r=>cc[r.plate]=(cc[r.plate]||0)+(r.total||0));
+  const hc=Object.entries(cc).sort((a,b)=>b[1]-a[1])[0];
+
+  document.getElementById('stat-cost').textContent=fmt(totalCost);
+  document.getElementById('stat-count').textContent=fmtNum(totalRep)+' ครั้ง';
+  document.getElementById('stat-most').textContent=mp?mp[0]:'-';
+  document.getElementById('stat-most-sub').textContent=mp?`ซ่อม ${mp[1]} ครั้ง`:'-';
+  document.getElementById('stat-top-cost').textContent=hc?hc[0]:'-';
+  document.getElementById('stat-top-cost-sub').textContent=hc?fmt(hc[1]):'-';
+
+  // Pending badge
+  const pend=allData.filter(r=>r.status!=='เสร็จแล้ว');
+  document.getElementById('badge-pending').textContent=pend.length;
+  document.getElementById('pending-badge-count').textContent=pend.length;
+  document.getElementById('pending-count').textContent=pend.length+' รายการ';
+
+  renderCharts();
+  renderPendingTable();
+}
+
+// ─── CHARTS ───────────────────────────────────────────────────────────────
+function renderCharts(){
+  // Monthly
+  const md={};
+  allData.forEach(r=>{
+    const m=r.date?r.date.substring(0,7):'';
+    if(m)md[m]=(md[m]||0)+(r.total||0);
+  });
+  const months=Object.keys(md).sort();
+  const mLabels=months.map(m=>{const[y,mo]=m.split('-');return `${MONTHS_TH[parseInt(mo)-1]} ${parseInt(y)+543-2500}`});
+  const mVals=months.map(m=>md[m]);
+
+  if(charts.monthly){
+    charts.monthly.data.labels=mLabels;
+    charts.monthly.data.datasets[0].data=mVals;
+    charts.monthly.update();
+  }else{
+    const ctx=document.getElementById('chart-monthly').getContext('2d');
+    charts.monthly=new Chart(ctx,{
+      type:'bar',
+      data:{labels:mLabels,datasets:[{label:'ค่าใช้จ่าย (บาท)',data:mVals,backgroundColor:'#3b82f6',borderRadius:5,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`฿${ctx.raw.toLocaleString('th-TH')}`}}},
+        scales:{y:{beginAtZero:true,ticks:{callback:v=>`฿${(v/1000).toFixed(0)}K`},grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}}
+    });
+  }
+
+  // Category
+  const cat={};
+  allData.forEach(r=>{if(r.cat)cat[r.cat]=(cat[r.cat]||0)+1});
+  const cLabels=Object.keys(cat);
+  const cVals=Object.values(cat);
+  const cColors=cLabels.map(l=>CAT_COLORS[l]||'#94a3b8');
+
+  if(charts.cat){
+    charts.cat.data.labels=cLabels;
+    charts.cat.data.datasets[0].data=cVals;
+    charts.cat.data.datasets[0].backgroundColor=cColors;
+    charts.cat.update();
+  }else{
+    const ctx2=document.getElementById('chart-cat').getContext('2d');
+    charts.cat=new Chart(ctx2,{
+      type:'doughnut',
+      data:{labels:cLabels,datasets:[{data:cVals,backgroundColor:cColors,borderWidth:2,borderColor:'#fff'}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:8,usePointStyle:true}},
+        tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw} ครั้ง`}}}}
+    });
+  }
+}
+
+// ─── PENDING TABLE (dashboard widget) ─────────────────────────────────────
+function renderPendingTable(){
+  const pend=allData.filter(r=>r.status!=='เสร็จแล้ว').sort((a,b)=>a.date<b.date?1:-1);
+  const tb=document.getElementById('pending-tbody');
+  if(!pend.length){
+    tb.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-ico">✅</div><div class="empty-txt">ไม่มีงานค้าง</div></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML=pend.map(r=>`<tr>
+    <td>${fmtDate(r.date)}</td>
+    <td><span class="td-link" onclick="openModal('${r.plate}')">${r.plate}</span></td>
+    <td class="td-muted">${r.vtype}</td>
+    <td>${r.repair||'-'}</td>
+    <td>${catBadge(r.cat)}</td>
+    <td class="td-muted">${r.garage||'-'}</td>
+    <td>${statusBadge(r.status)}</td>
+    <td class="td-muted">${r.reporter||'-'}</td>
+  </tr>`).join('');
+
+  // Full pending section
+  const tb2=document.getElementById('pending-full-tbody');
+  tb2.innerHTML=pend.map(r=>`<tr>
+    <td>${fmtDate(r.date)}</td>
+    <td><span class="td-link" onclick="openModal('${r.plate}')">${r.plate}</span></td>
+    <td class="td-muted">${r.vtype}</td>
+    <td>${r.symptoms||'-'}</td>
+    <td>${r.repair||'-'}</td>
+    <td>${catBadge(r.cat)}</td>
+    <td class="td-muted">${r.garage||'-'}</td>
+    <td class="td-num ${r.total>0?'red':''}">${fmt(r.total)}</td>
+    <td>${statusBadge(r.status)}</td>
+    <td class="td-muted">${r.reporter||'-'}</td>
+    <td class="td-muted">${r.note||''}</td>
+  </tr>`).join('');
+}
+
+// ─── MAIN TABLE ───────────────────────────────────────────────────────────
+function renderTable(){
+  const tb=document.getElementById('main-tbody');
+  document.getElementById('tbl-count').textContent=filtered.length+' รายการ';
+  if(!filtered.length){
+    tb.innerHTML=`<tr><td colspan="16"><div class="empty"><div class="empty-ico">🔍</div><div class="empty-txt">ไม่พบข้อมูลที่ตรงกัน</div></div></td></tr>`;
+    return;
+  }
+  const rows=[...filtered].sort((a,b)=>a.date<b.date?1:-1);
+  tb.innerHTML=rows.map(r=>{
+    const idx=allData.indexOf(r);
+    return `<tr>
+    <td style="white-space:nowrap">${fmtDate(r.date)}</td>
+    <td><span class="td-link" onclick="openModal('${r.plate}')">${r.plate}</span></td>
+    <td>${vcatBadge(r.vcat)}</td>
+    <td class="td-muted" style="white-space:nowrap">${r.vtype||'-'}</td>
+    <td class="td-muted">${fmtNum(r.miles)}</td>
+    <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.symptoms||''}">${r.symptoms||'-'}</td>
+    <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.repair||''}">${r.repair||'-'}</td>
+    <td>${catBadge(r.cat)}</td>
+    <td class="td-muted" style="white-space:nowrap">${r.garage||'-'}</td>
+    <td class="td-num">${fmt(r.parts)}</td>
+    <td class="td-num">${fmt(r.labor)}</td>
+    <td class="td-num red">${fmt(r.total)}</td>
+    <td>${statusBadge(r.status)}</td>
+    <td class="td-muted">${r.reporter||'-'}</td>
+    <td class="td-muted" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.note||''}</td>
+    <td style="white-space:nowrap">
+      <button class="btn btn-sm" onclick="openEditForm(${idx})" title="แก้ไข" style="margin-right:4px">✏️</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRecord(${idx})" title="ลบ">🗑️</button>
+    </td>
+  </tr>`;
+  }).join('');
+}
+
+// ─── FILTERS ──────────────────────────────────────────────────────────────
+function populatePlateFilter(){
+  const sel=document.getElementById('f-plate');
+  const plates=[...new Set(allData.map(r=>r.plate))].sort();
+  const cur=sel.value;
+  sel.innerHTML='<option value="">ทั้งหมด</option>'+plates.map(p=>`<option${p===cur?' selected':''}>${p}</option>`).join('');
+}
+
+function applyFilters(){
+  const plate=document.getElementById('f-plate').value;
+  const month=document.getElementById('f-month').value;
+  const vcat=document.getElementById('f-vcat').value;
+  const status=document.getElementById('f-status').value;
+  const cat=document.getElementById('f-cat').value;
+  const search=document.getElementById('f-search').value.toLowerCase();
+
+  filtered=allData.filter(r=>{
+    if(plate&&r.plate!==plate)return false;
+    if(month&&(!r.date||r.date.substring(0,7)!==month))return false;
+    if(vcat&&(r.vcat||'รถยนต์')!==vcat)return false;
+    if(status&&r.status!==status)return false;
+    if(cat&&r.cat!==cat)return false;
+    if(search){
+      const haystack=[r.plate,r.vtype,r.symptoms,r.repair,r.garage,r.reporter,r.note].join(' ').toLowerCase();
+      if(!haystack.includes(search))return false;
+    }
+    return true;
+  });
+  renderTable();
+}
+
+function resetFilters(){
+  document.getElementById('f-plate').value='';
+  document.getElementById('f-month').value='';
+  document.getElementById('f-vcat').value='';
+  document.getElementById('f-status').value='';
+  document.getElementById('f-cat').value='';
+  document.getElementById('f-search').value='';
+  filtered=[...allData];
+  renderTable();
+}
+
+// ─── VEHICLE HISTORY MODAL ────────────────────────────────────────────────
+function openModal(plate){
+  const records=allData.filter(r=>r.plate===plate).sort((a,b)=>a.date<b.date?1:-1);
+  const vtype=records[0]?.vtype||'';
+  document.getElementById('modal-title').textContent=`ประวัติซ่อม: ${plate}`;
+  document.getElementById('modal-vtype').textContent=vtype;
+
+  const totalCost=records.reduce((s,r)=>s+(r.total||0),0);
+  const done=records.filter(r=>r.status==='เสร็จแล้ว').length;
+  const lastMiles=records.reduce((m,r)=>Math.max(m,r.miles||0),0);
+
+  document.getElementById('modal-stats').innerHTML=`
+    <div class="ms"><div class="ms-val">${records.length}</div><div class="ms-lbl">ครั้งที่ซ่อม</div></div>
+    <div class="ms"><div class="ms-val">${fmt(totalCost)}</div><div class="ms-lbl">ค่าใช้จ่ายรวม</div></div>
+    <div class="ms"><div class="ms-val">${done}</div><div class="ms-lbl">เสร็จแล้ว</div></div>
+    <div class="ms"><div class="ms-val">${fmtNum(lastMiles)}</div><div class="ms-lbl">เลขไมล์ล่าสุด</div></div>`;
+
+  document.getElementById('modal-tbody').innerHTML=records.map(r=>`<tr>
+    <td style="white-space:nowrap">${fmtDate(r.date)}</td>
+    <td class="td-muted">${fmtNum(r.miles)}</td>
+    <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.symptoms||''}">${r.symptoms||'-'}</td>
+    <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.repair||''}">${r.repair||'-'}</td>
+    <td>${catBadge(r.cat)}</td>
+    <td class="td-muted">${r.garage||'-'}</td>
+    <td class="td-num">${fmt(r.parts)}</td>
+    <td class="td-num">${fmt(r.labor)}</td>
+    <td class="td-num red">${fmt(r.total)}</td>
+    <td>${statusBadge(r.status)}</td>
+  </tr>`).join('');
+
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('show');
+}
+
+document.getElementById('modal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modal'))closeModal();
+});
+
+// ─── FILE UPLOAD ──────────────────────────────────────────────────────────
+const COL_MAP={
+  'วันที่':'date','date':'date',
+  'ทะเบียนรถ':'plate','ทะเบียน':'plate','license':'plate',
+  'ประเภทยานพาหนะ':'vcat','vehicle category':'vcat','vcat':'vcat',
+  'ประเภทรถ':'vtype','ยี่ห้อ/รุ่น':'vtype','vehicle type':'vtype','type':'vtype',
+  'เลขไมล์':'miles','ไมล์':'miles','mileage':'miles','miles':'miles',
+  'อาการ/ปัญหา':'symptoms','อาการ':'symptoms','ปัญหา':'symptoms','symptoms':'symptoms',
+  'รายการซ่อม':'repair','repair':'repair','repair items':'repair',
+  'หมวดหมู่ซ่อม':'cat','หมวดหมู่':'cat','category':'cat',
+  'อู่/ผู้ซ่อม':'garage','อู่':'garage','garage':'garage',
+  'ค่าอะไหล่':'parts','parts cost':'parts','parts':'parts',
+  'ค่าแรง':'labor','labor cost':'labor','labor':'labor',
+  'รวมค่าใช้จ่าย':'total','รวม':'total','total cost':'total','total':'total',
+  'สถานะ':'status','status':'status',
+  'ผู้แจ้ง':'reporter','reporter':'reporter',
+  'หมายเหตุ':'note','note':'note','notes':'note','remark':'note'
+};
+
+function handleUpload(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'binary',cellDates:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{raw:false,dateNF:'YYYY-MM-DD'});
+      if(!rows.length){showToast('ไฟล์ไม่มีข้อมูล','err');return;}
+
+      const parsed=rows.map(row=>{
+        const r={};
+        Object.entries(row).forEach(([k,v])=>{
+          const key=COL_MAP[k.trim().toLowerCase()]||COL_MAP[k.trim()];
+          if(key)r[key]=v;
+        });
+        // Normalize
+        if(r.date&&typeof r.date==='string'&&r.date.includes('/')){
+          const p=r.date.split('/');
+          if(p.length===3)r.date=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+        }
+        r.parts=parseFloat(String(r.parts||0).replace(/,/g,''))||0;
+        r.labor=parseFloat(String(r.labor||0).replace(/,/g,''))||0;
+        r.total=parseFloat(String(r.total||0).replace(/,/g,''))||((r.parts||0)+(r.labor||0));
+        r.miles=parseFloat(String(r.miles||0).replace(/,/g,''))||0;
+        if(!r.status)r.status='รอดำเนินการ';
+        return r;
+      }).filter(r=>r.plate||r.date);
+
+      allData=[...parsed];
+      filtered=[...allData];
+      populatePlateFilter();
+      renderAll();
+      saveToStorage();
+      showToast(`นำเข้าสำเร็จ ${parsed.length} รายการ จากไฟล์ "${file.name}"`, 'ok');
+      showSection('dashboard',document.querySelector('.nav-btn'));
+    }catch(err){
+      showToast('เกิดข้อผิดพลาด: '+err.message,'err');
+    }
+  };
+  reader.readAsBinaryString(file);
+  e.target.value='';
+}
+
+// ─── DRAG & DROP ──────────────────────────────────────────────────────────
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file)handleUpload({target:{files:[file],value:''}});
+});
+
+// ─── EXPORT EXCEL ─────────────────────────────────────────────────────────
+function exportExcel(){
+  const rows=allData.map(r=>({
+    'วันที่':r.date,'ทะเบียนรถ':r.plate,'ประเภทยานพาหนะ':r.vcat||'รถยนต์','ยี่ห้อ/รุ่น':r.vtype,'เลขไมล์':r.miles,
+    'อาการ/ปัญหา':r.symptoms,'รายการซ่อม':r.repair,'หมวดหมู่ซ่อม':r.cat,
+    'อู่/ผู้ซ่อม':r.garage,'ค่าอะไหล่':r.parts,'ค่าแรง':r.labor,
+    'รวมค่าใช้จ่าย':r.total,'สถานะ':r.status,'ผู้แจ้ง':r.reporter,'หมายเหตุ':r.note
+  }));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'ซ่อมบำรุง');
+  XLSX.writeFile(wb,'maintenance_export.xlsx');
+  showToast('ส่งออก Excel สำเร็จ','ok');
+}
+
+// ─── DOWNLOAD TEMPLATE ────────────────────────────────────────────────────
+function downloadTemplate(){
+  const headers=['วันที่','ทะเบียนรถ','ประเภทรถ','เลขไมล์','อาการ/ปัญหา','รายการซ่อม','หมวดหมู่ซ่อม','อู่/ผู้ซ่อม','ค่าอะไหล่','ค่าแรง','รวมค่าใช้จ่าย','สถานะ','ผู้แจ้ง','หมายเหตุ'];
+  const ex=[headers.reduce((o,h)=>(o[h]='',o),{})];
+  ex[0]['วันที่']='2026-06-11';
+  ex[0]['ทะเบียนรถ']='กข-1234';
+  ex[0]['ประเภทยานพาหนะ']='รถยนต์';
+  ex[0]['ยี่ห้อ/รุ่น']='Toyota Vigo';
+  ex[0]['เลขไมล์']='85000';
+  ex[0]['อาการ/ปัญหา']='น้ำมันเครื่องรั่ว';
+  ex[0]['รายการซ่อม']='เปลี่ยนซีล';
+  ex[0]['หมวดหมู่ซ่อม']='เครื่องยนต์';
+  ex[0]['อู่/ผู้ซ่อม']='อู่ช่างสมชาย';
+  ex[0]['ค่าอะไหล่']='2500';
+  ex[0]['ค่าแรง']='1500';
+  ex[0]['รวมค่าใช้จ่าย']='4000';
+  ex[0]['สถานะ']='เสร็จแล้ว';
+  ex[0]['ผู้แจ้ง']='สมชาย ใจดี';
+  ex[0]['หมายเหตุ']='';
+  const ws=XLSX.utils.json_to_sheet(ex);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Template');
+  XLSX.writeFile(wb,'maintenance_template.xlsx');
+  showToast('ดาวน์โหลด Template สำเร็จ','ok');
+}
+
+// ─── LOCAL STORAGE ────────────────────────────────────────────────────────
+const STORE_KEY='maint_v1';
+function saveToStorage(){try{localStorage.setItem(STORE_KEY,JSON.stringify(allData));}catch(e){}}
+function loadFromStorage(){try{const d=localStorage.getItem(STORE_KEY);if(d){allData=JSON.parse(d);return true;}}catch(e){}return false;}
+
+// ─── FORM (ADD / EDIT) ────────────────────────────────────────────────────
+let _editIdx=-1;
+
+function openAddForm(){
+  _editIdx=-1;
+  document.getElementById('form-modal-title').textContent='➕ เพิ่มรายการซ่อม';
+  document.getElementById('ff-date').value=new Date().toISOString().split('T')[0];
+  ['ff-plate','ff-vtype','ff-miles','ff-symptoms','ff-repair','ff-garage',
+   'ff-parts','ff-labor','ff-total','ff-reporter','ff-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ff-vcat').value='รถยนต์';
+  document.getElementById('ff-cat').value='';
+  document.getElementById('ff-status').value='รอดำเนินการ';
+  document.getElementById('form-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('ff-date').focus(),100);
+}
+
+function openEditForm(idx){
+  _editIdx=idx;
+  const r=allData[idx];
+  document.getElementById('form-modal-title').textContent='✏️ แก้ไขรายการซ่อม';
+  document.getElementById('ff-date').value=r.date||'';
+  document.getElementById('ff-plate').value=r.plate||'';
+  document.getElementById('ff-vcat').value=r.vcat||'รถยนต์';
+  document.getElementById('ff-vtype').value=r.vtype||'';
+  document.getElementById('ff-miles').value=r.miles||'';
+  document.getElementById('ff-symptoms').value=r.symptoms||'';
+  document.getElementById('ff-repair').value=r.repair||'';
+  document.getElementById('ff-cat').value=r.cat||'';
+  document.getElementById('ff-garage').value=r.garage||'';
+  document.getElementById('ff-parts').value=r.parts||'';
+  document.getElementById('ff-labor').value=r.labor||'';
+  document.getElementById('ff-total').value=r.total||'';
+  document.getElementById('ff-status').value=r.status||'รอดำเนินการ';
+  document.getElementById('ff-reporter').value=r.reporter||'';
+  document.getElementById('ff-note').value=r.note||'';
+  document.getElementById('form-modal').classList.add('show');
+}
+
+function closeFormModal(){
+  document.getElementById('form-modal').classList.remove('show');
+}
+document.getElementById('form-modal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('form-modal'))closeFormModal();
+});
+
+function calcTotal(){
+  const p=parseFloat(document.getElementById('ff-parts').value)||0;
+  const l=parseFloat(document.getElementById('ff-labor').value)||0;
+  if(p||l)document.getElementById('ff-total').value=p+l;
+}
+
+function saveFormData(){
+  const plate=document.getElementById('ff-plate').value.trim();
+  const date=document.getElementById('ff-date').value;
+  if(!plate||!date){showToast('กรุณากรอก วันที่ และ ทะเบียนรถ','err');return;}
+  const rec={
+    date,plate,
+    vcat:document.getElementById('ff-vcat').value,
+    vtype:document.getElementById('ff-vtype').value.trim(),
+    miles:parseFloat(document.getElementById('ff-miles').value)||0,
+    symptoms:document.getElementById('ff-symptoms').value.trim(),
+    repair:document.getElementById('ff-repair').value.trim(),
+    cat:document.getElementById('ff-cat').value,
+    garage:document.getElementById('ff-garage').value.trim(),
+    parts:parseFloat(document.getElementById('ff-parts').value)||0,
+    labor:parseFloat(document.getElementById('ff-labor').value)||0,
+    total:parseFloat(document.getElementById('ff-total').value)||0,
+    status:document.getElementById('ff-status').value,
+    reporter:document.getElementById('ff-reporter').value.trim(),
+    note:document.getElementById('ff-note').value.trim()
+  };
+  if(_editIdx>=0){allData[_editIdx]=rec;showToast('แก้ไขรายการสำเร็จ ✓','ok');}
+  else{allData.unshift(rec);showToast('เพิ่มรายการสำเร็จ ✓','ok');}
+  saveToStorage();
+  filtered=[...allData];
+  closeFormModal();
+  populatePlateFilter();
+  renderAll();
+}
+
+function deleteRecord(idx){
+  const r=allData[idx];
+  if(!confirm(`ลบรายการนี้?\n\nทะเบียน: ${r.plate}\nวันที่: ${fmtDate(r.date)}\nรายการ: ${r.repair||'-'}`))return;
+  allData.splice(idx,1);
+  saveToStorage();
+  filtered=[...allData];
+  populatePlateFilter();
+  renderAll();
+  showToast('ลบรายการแล้ว','ok');
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show t-'+(type==='ok'?'ok':'err');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+function renderAll(){
+  renderDashboard();
+  renderTable();
+  populatePlateFilter();
+}
+
+if(!loadFromStorage()){
+  allData=[...SAMPLE];
+}
+filtered=[...allData];
+populatePlateFilter();
+renderAll();
+</script>
+</body>
+</html>
