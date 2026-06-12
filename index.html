@@ -164,6 +164,9 @@ textarea.fi{resize:vertical;min-height:62px;font-family:inherit}
 .btn-danger{background:var(--dan);color:#fff;border-color:var(--dan)}
 .btn-danger:hover{background:#b91c1c;border-color:#b91c1c}
 .btn-sm{padding:4px 8px;font-size:12px;border-radius:5px}
+.cf-btn{padding:4px 12px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid var(--bdr);background:var(--bg);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.cf-btn:hover{border-color:var(--pri);color:var(--pri)}
+.cf-btn.active{background:var(--pri);color:#fff;border-color:var(--pri)}
 </style>
 </head>
 <body>
@@ -270,6 +273,12 @@ textarea.fi{resize:vertical;min-height:62px;font-family:inherit}
             <div>
               <div class="card-title">ค่าใช้จ่ายซ่อมรายเดือน</div>
               <div class="card-sub">แสดงยอดรวมค่าซ่อมแยกตามเดือน</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="cf-btn active" id="cf-all" onclick="setChartFilter('')">ทั้งหมด</button>
+              <button class="cf-btn" id="cf-car" onclick="setChartFilter('รถยนต์')">🚗 รถยนต์</button>
+              <button class="cf-btn" id="cf-truck" onclick="setChartFilter('รถบรรทุก')">🚛 รถบรรทุก</button>
+              <button class="cf-btn" id="cf-fork" onclick="setChartFilter('รถโฟคลิฟท์')">🏗️ รถโฟคลิฟท์</button>
             </div>
           </div>
           <div style="height:260px;position:relative"><canvas id="chart-monthly"></canvas></div>
@@ -577,6 +586,7 @@ const SAMPLE = [
 let allData = [...SAMPLE];
 let filtered = [...allData];
 let charts = {};
+let chartVcatFilter = '';
 const CAT_COLORS = {
   'เครื่องยนต์':'#3b82f6','เบรก':'#ef4444','ยาง':'#10b981','แอร์':'#06b6d4',
   'ระบบไฟ':'#f59e0b','ช่วงล่าง':'#8b5cf6','อื่น ๆ':'#6b7280'
@@ -653,11 +663,21 @@ function renderDashboard(){
   renderPendingTable();
 }
 
+// ─── CHART VCAT FILTER ────────────────────────────────────────────────────
+function setChartFilter(vcat){
+  chartVcatFilter=vcat;
+  const map={'':'cf-all','รถยนต์':'cf-car','รถบรรทุก':'cf-truck','รถโฟคลิฟท์':'cf-fork'};
+  Object.values(map).forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById(map[vcat]||'cf-all').classList.add('active');
+  renderCharts();
+}
+
 // ─── CHARTS ───────────────────────────────────────────────────────────────
 function renderCharts(){
   // Monthly
   const md={};
-  allData.forEach(r=>{
+  const src=chartVcatFilter?allData.filter(r=>(r.vcat||'รถยนต์')===chartVcatFilter):allData;
+  src.forEach(r=>{
     const m=r.date?r.date.substring(0,7):'';
     if(m)md[m]=(md[m]||0)+(r.total||0);
   });
